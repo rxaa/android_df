@@ -4,8 +4,11 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.support.v4.app.ActivityCompat
 import android.view.View
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-fun Activity.requestPermission(permissionStr: String, resp: (success: Boolean) -> Unit) {
+
+suspend fun Activity.awaitRequestPermission(permissionStr: String) = suspendCoroutine<Boolean> { cont ->
     val code = ActivityEx.getReqCode();
     val permission = ActivityCompat.checkSelfPermission(this, permissionStr)
     if (permission != PackageManager.PERMISSION_GRANTED) {
@@ -15,8 +18,9 @@ fun Activity.requestPermission(permissionStr: String, resp: (success: Boolean) -
             arrayOf(permissionStr), //需要请求的所有权限，这是个数组String[]
             code//请求码
         )
-        ActivityEx.permissionCameraFunc[code] = resp;
+
+        ActivityEx.permissionCameraContinuation.put(code, cont);
     } else {
-        resp(true);
+        cont.resume(true);
     }
 }

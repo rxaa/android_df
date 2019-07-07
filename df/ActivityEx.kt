@@ -7,10 +7,13 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import java.util.*
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
 
 open class ActivityEx : Activity() {
 
@@ -37,7 +40,7 @@ open class ActivityEx : Activity() {
     }
 
 
-    fun <T:View> find(id: Int): T {
+    fun <T : View> find(id: Int): T {
         return findViewById<T>(id) as T;
     }
 
@@ -202,7 +205,8 @@ open class ActivityEx : Activity() {
 
     companion object {
 
-        val permissionCameraFunc = HashMap<Int, (permission: Boolean) -> Unit>();
+        val permissionCameraContinuation = SparseArray<Continuation<Boolean>>();
+
         private var permissionCode = 0;
 
         fun getReqCode(): Int {
@@ -233,18 +237,26 @@ open class ActivityEx : Activity() {
             return path
         }
 
-        fun onActivityRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray) {
+        fun onActivityRequestPermissionsResult(
+            requestCode: Int,
+            permissions: Array<out String>?,
+            grantResults: IntArray
+        ) {
             df.catchLog {
-                permissionCameraFunc[requestCode].notNull {
-                    permissionCameraFunc.remove(requestCode)
-                    it(grantResults.size > 0
-                            && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                permissionCameraContinuation[requestCode].notNull {
+                    permissionCameraContinuation.remove(requestCode)
+                    it.resume(
+                        grantResults.size > 0
+                                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    )
                 }
             }
         }
 
-        fun onActivityResult(act: Activity, requestCode: Int,
-                             resultCode: Int, data: Intent?) {
+        fun onActivityResult(
+            act: Activity, requestCode: Int,
+            resultCode: Int, data: Intent?
+        ) {
 
 
             if (requestCode == Pic.getFileTag) {
@@ -308,8 +320,7 @@ open class ActivityEx : Activity() {
         @JvmStatic
         inline fun <reified T : Activity> newIntent(cont: Context?, crossinline func: (T) -> Unit): Intent {
             val inte = Intent(cont, T::class.java)
-            addIntentPara(inte) {
-                act ->
+            addIntentPara(inte) { act ->
                 func(act as T)
             }
             return inte
@@ -318,8 +329,7 @@ open class ActivityEx : Activity() {
         @JvmStatic
         fun <T : Activity> createIntent(cont: Context, clas: Class<T>, func: Func1<T>): Intent {
             val inte = Intent(cont, clas)
-            addIntentPara(inte) {
-                act ->
+            addIntentPara(inte) { act ->
                 func.run(act as T)
             }
             return inte

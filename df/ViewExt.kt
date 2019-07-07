@@ -20,6 +20,9 @@ fun String?.isNull(): Boolean {
     return true;
 }
 
+val Int.resource: String
+    get() = df.appContext!!.resources.getString(this);
+
 fun RecyclerView.isScrollTop(): Boolean {
     return this.computeVerticalScrollOffset() <= 0
 }
@@ -85,20 +88,23 @@ val <T : View> T.gone: T
         return this
     }
 
-fun <T : View> T.onClick(cb: (v: T) -> Unit): T {
+fun <T : View> T.onClick(cb: suspend (v: T) -> Unit): T {
     this.setOnClickListener({ v ->
-        df.catchLog { cb(this) }
+        df.launch {
+            cb(this)
+        }
     })
     return this
 }
 
-fun <T : View> T.onLongClick(cb: (v: T) -> Unit): T {
+fun <T : View> T.onLongClick(cb: suspend (v: T) -> Unit): T {
     this.setOnLongClickListener({ v ->
-        df.catchLog { cb(this) }
+        df.launch { cb(this) }
         return@setOnLongClickListener true;
     })
     return this
 }
+
 
 fun <T : View> T.onTouch(cb: (event: MotionEvent) -> Boolean): T {
     this.setOnTouchListener { view, motionEvent ->
@@ -108,11 +114,11 @@ fun <T : View> T.onTouch(cb: (event: MotionEvent) -> Boolean): T {
     return this
 }
 
-fun EditText.onTextChange(func: EditText.(old: String) -> Unit): EditText {
+fun EditText.onTextChange(func: suspend EditText.(old: String) -> Unit): EditText {
     this.addTextChangedListener(object : TextWatcher {
         var old = ""
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            df.catchLog { func(old) }
+            df.launch { func(old) }
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -126,7 +132,7 @@ fun EditText.onTextChange(func: EditText.(old: String) -> Unit): EditText {
     return this
 }
 
-fun EditText.onEditor(onDone: EditText.() -> Unit): EditText {
+fun EditText.onEditor(onDone: suspend EditText.() -> Unit): EditText {
     this.setOnEditorActionListener({ textView, actionId, keyEvent ->
 
         when (actionId) {
@@ -134,7 +140,7 @@ fun EditText.onEditor(onDone: EditText.() -> Unit): EditText {
             EditorInfo.IME_ACTION_GO,
             EditorInfo.IME_ACTION_DONE,
             EditorInfo.IME_ACTION_SEARCH ->
-                df.catchLog { onDone() }
+                df.launch { onDone() }
         }
         true
     })
@@ -230,7 +236,7 @@ fun String?.getInt(default: Int = 0): Int {
         return default
     try {
         return this.toDouble().toInt()
-    } catch(e: Exception) {
+    } catch (e: Exception) {
     }
 
     return default
@@ -241,7 +247,7 @@ fun String?.getLong(default: Long = 0): Long {
         return default
     try {
         return this.toDouble().toLong()
-    } catch(e: Exception) {
+    } catch (e: Exception) {
     }
     return default
 }
@@ -251,7 +257,7 @@ fun String?.getDouble(default: Double = 0.0): Double {
         return default
     try {
         return this.toDouble()
-    } catch(e: Exception) {
+    } catch (e: Exception) {
     }
     return default
 }

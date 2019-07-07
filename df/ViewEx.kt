@@ -20,8 +20,8 @@ open class ViewEx(private val cont: Context) {
         cont.startActivity(inte)
     }
 
-    private var _rootView: View? = null;
-    private var _rootDialog: Dialog? = null;
+    internal var _rootView: View? = null;
+    internal var _rootDialog: Dialog? = null;
 
     internal var viewType = 0;
 
@@ -75,7 +75,7 @@ open class ViewEx(private val cont: Context) {
         return _rootView as View
     }
 
-    fun onClick(func: (v: View) -> Unit) {
+    fun onClick(func: suspend (v: View) -> Unit) {
         getView().onClick(func)
     }
 
@@ -88,7 +88,7 @@ open class ViewEx(private val cont: Context) {
         return getView()
     }
 
-    fun <T:View> find(id: Int): T {
+    fun <T : View> find(id: Int): T {
         return _rootView!!.findViewById<T>(id) as T;
     }
 
@@ -133,11 +133,27 @@ open class ViewEx(private val cont: Context) {
     }
 
     /**
+     * 防止被输入法遮挡,在dialog show之后设置才能生效
+     * （同时需要设置activity属性android:windowSoftInputMode="adjustResize"）
+     */
+    fun dialogMatchParent() {
+        _rootDialog.notNull { alert ->
+            val dialogWin = alert.getWindow();
+            val lp = dialogWin.attributes;
+            lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            dialogWin.attributes = lp;
+        }
+    }
+
+    /**
      * 将此视图作为弹出框显示
      */
-    fun showAsDialog(onClose: () -> Unit = {},
-                     cancelAble: Boolean = true,
-                     onPreShow: (dialog: Dialog) -> Unit = {}) {
+    fun showAsDialog(
+        onClose: () -> Unit = {},
+        cancelAble: Boolean = true,
+        onPreShow: (dialog: Dialog) -> Unit = {}
+    ) {
         if (_rootDialog != null) {
             closeDialog()
         }
@@ -166,7 +182,7 @@ open class ViewEx(private val cont: Context) {
             _rootDialog.notNull {
                 return it.isShowing
             }
-        } catch(e: Throwable) {
+        } catch (e: Throwable) {
         }
         return false;
     }
@@ -178,7 +194,7 @@ open class ViewEx(private val cont: Context) {
         try {
             _rootDialog?.dismiss();
             _rootDialog = null
-        } catch(e: Exception) {
+        } catch (e: Exception) {
         }
     }
 

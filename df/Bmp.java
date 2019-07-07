@@ -33,6 +33,7 @@ public class Bmp {
         if (sentBitmap == null)
             return null;
 
+        
         if (VERSION.SDK_INT > 16) {
             return blurSys(df.getAppContext(), sentBitmap, radius);
         }

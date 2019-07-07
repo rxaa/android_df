@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import com.qpe.mediamux.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -26,6 +27,8 @@ import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.*
 import java.util.concurrent.ExecutorService
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @SuppressLint("StaticFieldLeak")
 object df {
@@ -49,6 +52,9 @@ object df {
     val actStack = ArrayList<Activity>();
 
 
+    /**
+     *  在当前线程启动协程
+     */
     fun launch(block: suspend () -> Unit) {
         GlobalScope.launch(Dispatchers.Unconfined) {
             catchLog {
@@ -172,6 +178,22 @@ object df {
             df.catchLog { func() }
         }
         handl.post(run)
+        return run;
+    }
+
+    @JvmStatic
+    fun runOnUiCheck(func: () -> Unit): Runnable {
+        val run = Runnable {
+            df.catchLog { func() }
+        }
+
+        val lo = Looper.myLooper()
+        //检测是否已经在主线程
+        if (lo == null || lo != Looper.getMainLooper()) {
+            handl.post(run)
+        } else {
+            run.run()
+        }
         return run;
     }
 
@@ -440,23 +462,52 @@ object df {
         return writeLogFunc(text, file)
     }
 
+    fun numberFix2(num: Long): String {
+        if (num < 10)
+            return "0" + num;
+        return "" + num + "";
+    }
+
+    fun timeToStr2(mss: Long, trimMilli: Boolean = true): String {
+        val days = mss / (1000 * 60 * 60 * 24);
+        val hours = (mss % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
+        val minutes = (mss % (1000 * 60 * 60)) / (1000 * 60);
+        val seconds = (mss % (1000 * 60)) / 1000;
+
+        var ret = "";
+        if (hours > 0)
+            ret += "" + hours + ":";
+        ret += numberFix2(minutes) + ":";
+
+        ret += numberFix2(seconds) + "";
+
+        if (!trimMilli) {
+            val mill = (mss % (1000L));
+            ret += "." + numberFix2(mill);
+        }
+
+        return ret;
+    }
+
     /**
      * 弹出对话框
      */
     @JvmStatic
     @JvmOverloads
-    fun msgDialog(cont: String?, title: String? = "消息", onOk: () -> Unit = {}) {
+    fun msgDialog(cont: String?, title: String? = "", onOk: () -> Unit = {}) {
 
-        df.actStack.lastItem {
+        df.actStack.lastItem { act ->
             val run = {
-                val bu = AlertDialog.Builder(df.currentActivity)
+                val bu = AlertDialog.Builder(act)
                 bu.setCancelable(false)
-                if (title != null)
+                title.notEmpty {
                     bu.setTitle(title)
+                }
+
                 if (cont != null)
                     bu.setMessage(cont)
 
-                val alert = bu.setPositiveButton("确定", DialogInterface.OnClickListener { dialogInterface, i ->
+                val alert = bu.setPositiveButton(R.string.ok, DialogInterface.OnClickListener { dialogInterface, i ->
                     df.catchLog { onOk() }
                 }).create()
                 alert.show()
@@ -472,6 +523,36 @@ object df {
         msg(cont)
     }
 
+
+    /**
+     * 弹出对话框
+     */
+    suspend fun msgDialogAwait(cont: String?, title: String? = "") = suspendCoroutine<Boolean> { conti ->
+        df.actStack.lastItem { act ->
+            df.runOnUiCheck {
+                val bu = AlertDialog.Builder(act)
+                bu.setCancelable(false)
+                title.notEmpty {
+                    bu.setTitle(title)
+                }
+
+                if (cont != null)
+                    bu.setMessage(cont)
+
+                val alert = bu.setPositiveButton(R.string.ok, DialogInterface.OnClickListener { dialogInterface, i ->
+                    df.catchLog { conti.resume(true) }
+                }).setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialogInterface, i ->
+                    df.catchLog { conti.resume(false) }
+                })
+                    .create()
+                alert.show()
+            }
+        }.isNull {
+            msg(cont)
+            conti.resume(false)
+        }
+    }
+
     /**
      * 将异常写入日志
      */
@@ -481,7 +562,7 @@ object df {
         Log.e("wwwwwwwwwwwwww" + msg, "error", arg1)
         df.writeLog(msg + "--------\r\n" + getStackTraceInfo(arg1))
         if (msgDialog)
-            msgDialog(arg1.message)
+            msgDialog(arg1.message, "Error")
     }
 
     @JvmStatic
@@ -549,5 +630,56 @@ object df {
         vi.setOnClickListener { v ->
             df.catchLog { click.run() }
         }
+    }
+
+    /// <summary>
+    /// get file extension(not include .)
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    @JvmStatic
+    fun getFileExt(name: String): String {
+        val ext = name.lastIndexOf('.');
+        if (ext < 0)
+            return "";
+        val aLastName = name.substring(ext + 1, (name.length - ext - 1));
+        return aLastName.toLowerCase()
+    }
+
+    @JvmStatic
+    fun isEmpty(str: String?): Boolean {
+        return str == null || str == ""
+    }
+
+    /// <summary>
+    /// get an unrepeat file name
+    /// </summary>
+    /// <param name="file">file origin</param>
+    /// <param name="extName">new extension</param>
+    /// <returns></returns>
+    @JvmStatic
+    fun getFile2(file: String, extName: String = ""): String {
+        if (file == "")
+            return "";
+        val extI = file.lastIndexOf('.');
+        var name = file;
+        if (extI >= 0)
+            name = file.substring(0, extI);
+
+        val ext = if (extName == "")
+            getFileExt(file)
+        else
+            extName
+
+
+        var newName = name + "." + ext;
+        for (i in 2..1000) {
+            if (File(newName).exists()) {
+                newName = name + "_" + i + "." + ext;
+            } else {
+                return newName;
+            }
+        }
+        return name + "_new." + ext;
     }
 }

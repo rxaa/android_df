@@ -1,6 +1,14 @@
 package rxaa.df
 
 
+inline fun <T> T?.isNull(f: () -> Unit): Boolean {
+    if (this == null) {
+        f()
+        return true
+    }
+    return false
+}
+
 inline fun <T> T?.notNull(f: (p: T) -> Unit): Boolean {
     if (this != null) {
         f(this)
