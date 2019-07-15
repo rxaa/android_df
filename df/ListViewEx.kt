@@ -3,6 +3,7 @@ package rxaa.df
 import android.content.Context
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -13,12 +14,12 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     var data = ArrayList<ListT>()
 
     var listView: AbsListView? = null
-    private var mCont: android.content.Context? = null
+    internal var mCont: android.content.Context? = null
 
-    private var adapt: LiAdapter? = null
-    private var recyAdapter: RecyAdapter? = null;
-    private var linearView: LinearLayout? = null
-    var _recyclerView: RecyclerView? = null
+    internal var adapt: LiAdapter? = null
+    internal var recyAdapter: RecyAdapter? = null;
+    internal var linearView: LinearLayout? = null
+    internal var _recyclerView: RecyclerView? = null
 
     var showItem: ((index: Int, vi: View?) -> View?)? = null
     var onItemClick: ((index: Int, vi: View) -> Unit)? = null
@@ -66,7 +67,7 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         return false;
     }
 
-    inline fun isRecycler(f: (lv: RecyclerView) -> Unit): Boolean {
+    fun isRecycler(f: (lv: RecyclerView) -> Unit): Boolean {
         if (_recyclerView != null) {
             f(_recyclerView as RecyclerView)
             return true
@@ -78,6 +79,7 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     internal val headViewType = -39583;
     internal val headViewList = ArrayList<ViewEx>();
 
+
     /**
      * 同ListView
      */
@@ -88,8 +90,10 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         }
         _recyclerView.notNull {
             headViewList.add(view);
-            val lp = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT)
+            val lp = RecyclerView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
             view.getView().layoutParams = lp
         }
         linearView.notNull {
@@ -180,7 +184,8 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
             // TODO Auto-generated method stub
             try {
                 if (arg2 >= 0 && arg2 < data.size
-                        && onItemLongClick != null)
+                    && onItemLongClick != null
+                )
                     return@OnItemLongClickListener onItemLongClick!!(arg2, arg1)
             } catch (e: Throwable) {
                 // TODO Auto-generated catch block
@@ -210,7 +215,8 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
             try {
                 arg2 -= listViewid.headerViewsCount
                 if (arg2 >= 0 && arg2 < data.size
-                        && onItemClick != null)
+                    && onItemClick != null
+                )
                     onItemClick!!(arg2, arg1)
             } catch (e: Throwable) {
                 // TODO Auto-generated catch block
@@ -224,7 +230,8 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
             try {
                 arg2 -= listViewid.headerViewsCount
                 if (arg2 >= 0 && arg2 < data.size
-                        && onItemLongClick != null)
+                    && onItemLongClick != null
+                )
                     return@OnItemLongClickListener onItemLongClick!!(arg2, arg1)
             } catch (e: Throwable) {
                 // TODO Auto-generated catch block
@@ -290,6 +297,14 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         return vi
     }
 
+
+    fun removeAt(i: Int) {
+        data.removeAt(i)
+        if (linearView != null) {
+            linearView!!.removeViewAt(i)
+        }
+        update()
+    }
 
     /**
      * 添加一条数据
@@ -404,6 +419,13 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         return data.size
     }
 
+    fun enableDrag(onMove: (fromPosition: Int, toPosition: Int) -> Unit = { f, t -> }) {
+        _recyclerView.notNull { recycler ->
+            val mItemTouchHelper = ItemTouchHelper(ItemDragCallback(this, onMove))
+            mItemTouchHelper.attachToRecyclerView(recycler)
+        }
+    }
+
     /**
      * 移除指定位置
      */
@@ -490,7 +512,7 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         }
     }
 
-    private inner class LiAdapter : BaseAdapter() {
+    inner class LiAdapter : BaseAdapter() {
 
         override fun getView(index: Int, arg1: View?, arg2: ViewGroup): View? {
             try {
