@@ -110,7 +110,7 @@ class RecybindAdapter(val recyvler: RecyclerView) : RecyclerView.Adapter<RecyIte
                 return;
             }
         }
-        throw Exception("unfind recyvlerData")
+        throw Exception("Can't find recyclerData")
     }
 
     override fun getItemCount(): Int {
