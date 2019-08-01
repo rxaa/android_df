@@ -153,9 +153,6 @@ class ViewPageEx : ViewPager {
         df.removeOnUi(longPressRun);
     }
 
-
-
-
     override fun onInterceptTouchEvent(arg0: MotionEvent): Boolean {
 
 

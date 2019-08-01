@@ -21,7 +21,7 @@ open class HttpDown {
         /**
          * 在线程池中run
          */
-        fun runPool(func: () -> Unit) {
+        fun runPool(func:suspend () -> Unit) {
             df.runOnPool(pool, func)
         }
 
@@ -91,11 +91,11 @@ open class HttpDown {
 
                         val act = acti
                         if (act != null && act.isFinishing) {
-                            throw MsgException("取消下载", ExceptionCode.activityClosed)
+                            throw MsgException("取消下载", ExceptionCode.activityClosed.ordinal)
                         }
 
                         if (isCancel) {
-                            throw MsgException("取消下载", ExceptionCode.cancelHttp)
+                            throw MsgException("取消下载", ExceptionCode.cancelHttp.ordinal)
                         }
                     })
                 } catch(e: Exception) {

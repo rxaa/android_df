@@ -15,7 +15,7 @@ enum class ExceptionCode {
 class MsgException : Exception {
 
     //错误编号
-    var code = ExceptionCode.normal;
+    var code = ExceptionCode.normal.ordinal;
 
     //是否可以显示
     var showAble = true;
@@ -28,12 +28,12 @@ class MsgException : Exception {
             super(msg, e) {
     }
 
-    constructor(msg: String, code: ExceptionCode) : // TODO Auto-generated constructor stub
+    constructor(msg: String, code: Int) : // TODO Auto-generated constructor stub
             super(msg) {
         this.code = code;
     }
 
-    constructor(msg: String, code: ExceptionCode, show: Boolean) : // TODO Auto-generated constructor stub
+    constructor(msg: String, code: Int, show: Boolean) : // TODO Auto-generated constructor stub
             super(msg) {
         this.code = code;
         this.showAble = show;

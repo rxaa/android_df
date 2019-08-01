@@ -16,6 +16,8 @@ import android.widget.ImageView
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 object Pic {
 
@@ -48,8 +50,10 @@ object Pic {
         val matrix = android.graphics.Matrix()
         matrix.postRotate(angle.toFloat())
         // 创建新的图片
-        val resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
-                bitmap.width, bitmap.height, matrix, true)
+        val resizedBitmap = Bitmap.createBitmap(
+            bitmap, 0, 0,
+            bitmap.width, bitmap.height, matrix, true
+        )
         return resizedBitmap
     }
 
@@ -64,7 +68,8 @@ object Pic {
     fun readPictureOrientation(path: String): Int {
         try {
             val exifInterface = ExifInterface(path)
-            val orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+            val orientation =
+                exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
             return orientation
         } catch (e: Exception) {
             e.printStackTrace()
@@ -85,7 +90,8 @@ object Pic {
         var degree = 0
         try {
             val exifInterface = ExifInterface(path)
-            val orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+            val orientation =
+                exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
             when (orientation) {
                 ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
                 ExifInterface.ORIENTATION_ROTATE_180 -> degree = 180
@@ -126,7 +132,8 @@ object Pic {
     @JvmStatic
     fun scanPhoto(ctx: Context, imgFileName: String) {
         val mediaScanIntent = Intent(
-                Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+            Intent.ACTION_MEDIA_SCANNER_SCAN_FILE
+        )
         val file = File(imgFileName)
         val contentUri = Uri.fromFile(file)
         mediaScanIntent.data = contentUri
@@ -160,7 +167,7 @@ object Pic {
                 bmp = Pic.rotaingImageView(degree, bmp)
             } else
                 bmp = Pic.readBigBitmap(from)
-        } catch(e: Exception) {
+        } catch (e: Exception) {
         }
 
         if (bmp == null) {
@@ -197,7 +204,8 @@ object Pic {
             opt.inPreferredConfig = cfg
             // 获取资源图片
             val `is` = df.appContext!!.resources.openRawResource(
-                    resId)
+                resId
+            )
             return BitmapFactory.decodeStream(`is`, null, opt)
         } catch (e: Throwable) {
             // TODO Auto-generated catch block
@@ -377,8 +385,10 @@ object Pic {
      * @param quality   图像质量,0-100
      */
     @JvmStatic
-    fun compressAndSaveBitmapToSDCard(rawBitmap: Bitmap?,
-                                      fileName: String, quality: Int) {
+    fun compressAndSaveBitmapToSDCard(
+        rawBitmap: Bitmap?,
+        fileName: String, quality: Int
+    ) {
         if (rawBitmap == null)
             return;
 
@@ -399,8 +409,10 @@ object Pic {
                 // 第一个参数format为压缩的格式
                 // 第二个参数quality为图像压缩比的值,0-100.0 意味着小尺寸压缩,100意味着高质量压缩
                 // 第三个参数stream为输出流
-                rawBitmap.compress(Bitmap.CompressFormat.JPEG, quality,
-                        fileOutputStream)
+                rawBitmap.compress(
+                    Bitmap.CompressFormat.JPEG, quality,
+                    fileOutputStream
+                )
             }
             fileOutputStream.flush()
             fileOutputStream.close()
@@ -418,8 +430,10 @@ object Pic {
      * @param fileName
      */
     @JvmStatic
-    fun compressAndSaveBitmapToSDCard(rawBitmap: Bitmap,
-                                      fileName: String) {
+    fun compressAndSaveBitmapToSDCard(
+        rawBitmap: Bitmap,
+        fileName: String
+    ) {
         val saveFilePaht = fileName
 
         try {
@@ -437,8 +451,10 @@ object Pic {
                 // 第一个参数format为压缩的格式
                 // 第二个参数quality为图像压缩比的值,0-100.0 意味着小尺寸压缩,100意味着高质量压缩
                 // 第三个参数stream为输出流
-                rawBitmap.compress(Bitmap.CompressFormat.PNG, 100,
-                        fileOutputStream)
+                rawBitmap.compress(
+                    Bitmap.CompressFormat.PNG, 100,
+                    fileOutputStream
+                )
             }
             fileOutputStream.flush()
             fileOutputStream.close()
@@ -474,8 +490,10 @@ object Pic {
         try {
             // mCurrentPhotoFile = new File(PHOTO_DIR, mFileName);
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE, null)
-            intent.putExtra(MediaStore.EXTRA_OUTPUT,
-                    Uri.fromFile(cameraFile))
+            intent.putExtra(
+                MediaStore.EXTRA_OUTPUT,
+                Uri.fromFile(cameraFile)
+            )
             takePhotoFunc = res
             act.startActivityForResult(intent, takePhotoTag)
 
@@ -499,6 +517,10 @@ object Pic {
     @JvmStatic
     fun getImageFile(act: Activity, res: Func1<String>) {
         getFile(act, "image/*", res)
+    }
+
+    suspend fun awaitGetImageFile(act: Activity): String {
+        return awaitGetFile(act, "image/*")
     }
 
     /**
@@ -572,6 +594,12 @@ object Pic {
             getFileTable = null
         }
 
+    }
+
+    suspend fun awaitGetFile(act: Activity, filter: String) = suspendCoroutine<String> { conti ->
+        getFile(act, filter, Func1 { res ->
+            conti.resume(res)
+        })
     }
 
     @JvmStatic

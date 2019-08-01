@@ -18,7 +18,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import com.qpe.mediamux.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -28,6 +27,7 @@ import java.lang.reflect.Modifier
 import java.util.*
 import java.util.concurrent.ExecutorService
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @SuppressLint("StaticFieldLeak")
@@ -160,14 +160,40 @@ object df {
 
 
     @JvmStatic
-    fun runOnPool(pool: ExecutorService, func: () -> Unit) {
+    fun runOnPool(pool: ExecutorService, func: suspend () -> Unit) {
         pool.execute({
-            df.catchLog { func() }
+            df.launch { func() }
         })
     }
 
 
     val handl = Handler(Looper.getMainLooper());
+
+    /**
+     * 切换到主线程
+     */
+    suspend fun <T> runToUI(func: suspend () -> T) = suspendCoroutine<T> { conti ->
+        handl.post(Runnable {
+            df.launch {
+                try {
+                    conti.resume(func())
+                } catch (e: Exception) {
+                    conti.resumeWithException(e)
+                }
+            }
+        })
+    }
+
+    /**
+     * 切换到线程池
+     */
+    suspend fun runToPool(pool: ExecutorService) = suspendCoroutine<Unit> { conti ->
+        pool.execute({
+            df.catchLog {
+                conti.resume(Unit)
+            }
+        })
+    }
 
     /**
      * 在主线程中运行
@@ -196,6 +222,15 @@ object df {
         }
         return run;
     }
+
+
+    suspend fun delay(time: Long) = suspendCoroutine<Unit> {
+        val run = Runnable {
+            df.catchLog { it.resume(Unit) }
+        }
+        handl.postDelayed(run, time);
+    }
+
 
     /**
      * 在主线程中延时(毫秒)运行
@@ -440,8 +475,9 @@ object df {
     @JvmStatic
     var writeLogFunc = fun(text: String, file: File): Boolean {
         try {
-            if (file.length() > 2 * 1024 * 1024)
+            if (file.length() > 2 * 1024 * 1024) {
                 file.delete()
+            }
 
             file.appendText("------$now------\r\n$text\r\n\r\n")
 
@@ -520,7 +556,7 @@ object df {
                 if (cont != null)
                     bu.setMessage(cont)
 
-                val alert = bu.setPositiveButton(R.string.ok, DialogInterface.OnClickListener { dialogInterface, i ->
+                val alert = bu.setPositiveButton(dfStr.ok, DialogInterface.OnClickListener { dialogInterface, i ->
                     df.catchLog { onOk() }
                 }).create()
                 alert.show()
@@ -552,9 +588,9 @@ object df {
                 if (cont != null)
                     bu.setMessage(cont)
 
-                val alert = bu.setPositiveButton(R.string.ok, DialogInterface.OnClickListener { dialogInterface, i ->
+                val alert = bu.setPositiveButton(dfStr.ok, DialogInterface.OnClickListener { dialogInterface, i ->
                     df.catchLog { conti.resume(true) }
-                }).setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialogInterface, i ->
+                }).setNegativeButton(dfStr.cancel, DialogInterface.OnClickListener { dialogInterface, i ->
                     df.catchLog { conti.resume(false) }
                 })
                     .create()
@@ -575,7 +611,7 @@ object df {
         Log.e("wwwwwwwwwwwwww" + msg, "error", arg1)
         df.writeLog(msg + "--------\r\n" + getStackTraceInfo(arg1))
         if (msgDialog)
-            msgDialog(arg1.message, "Error")
+            msgDialog(arg1.message, dfStr.error)
     }
 
     @JvmStatic
@@ -597,6 +633,16 @@ object df {
     }
 
 
+    val randStr = "0123456789abcdefghijklmnopqrstuvwxyz"
+
+    fun getRandStr(len: Int): String {
+        var ret = "";
+        for (i in 0 until len) {
+            ret += randStr[(Math.random() * randStr.length).toInt()]
+        }
+        return ret
+    }
+
     @JvmStatic
     fun getID(): Long {
         return System.currentTimeMillis().shl(16).plus((Math.random() * 65535).toLong())
@@ -608,7 +654,8 @@ object df {
     @JvmStatic
     fun imeOpen(vi: View) {
         val imm = df.appContext!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
+        vi.setFocusable(true);
+        vi.requestFocus();
         if (df.appContext!!.resources.configuration.keyboard == Configuration.KEYBOARD_NOKEYS)
             imm.showSoftInput(vi, 0)
     }

@@ -25,6 +25,8 @@ open class HttpReq<T : Any>() {
          * http日志目录
          */
         var getHttpLogFile = { df.getFileDir() + "/http.txt" }
+        var getHttpErrorLogFile = { df.getFileDir() + "/httpError.txt" }
+
     }
 
 
@@ -141,11 +143,11 @@ open class HttpReq<T : Any>() {
     internal fun isCancel() {
         acti.notNull {
             if (it.isFinishing)
-                throw MsgException("取消传输,activity close", ExceptionCode.activityClosed, false)
+                throw MsgException("取消传输,activity close", ExceptionCode.activityClosed.ordinal, false)
         }
 
         if (isCancel)
-            throw MsgException("取消传输", ExceptionCode.cancelHttp, false)
+            throw MsgException("取消传输", ExceptionCode.cancelHttp.ordinal, false)
     }
 
 
@@ -196,6 +198,10 @@ open class HttpReq<T : Any>() {
             }
     }
 
+
+    var writeLog = { cont: String ->
+        df.writeLog(cont, getHttpLogFile())
+    }
     /**
      *是否开启传输日志
      */
@@ -205,10 +211,11 @@ open class HttpReq<T : Any>() {
      * get请求参数分隔符
      */
     var getUrlMark = "?";
+
     /**
-     * 发起请求,同步获取结果
+     * 发起请求,同步获取结果(阻塞)
      */
-    var request = fun(): T {
+    var request = suspend {
         isCancel()
         //拼接get url参数
         if (!isPost) {
@@ -221,16 +228,16 @@ open class HttpReq<T : Any>() {
         postMultipartFunc.notNull {
             val multi = http.postMultipart(it)
             if (httpLog)
-                df.writeLog("postMultipart:\r\n" + url + "\r\n" + multi.textStr, getHttpLogFile())
+                writeLog("postMultipart:\r\n" + url + "\r\n" + multi.textStr)
         }.nope {
             if (isPost) {
                 val content = postContent(http)
                 if (httpLog)
-                    df.writeLog("post:\r\n" + url + "\r\n" + content, getHttpLogFile())
+                    writeLog("post: " + url + "\r\n" + content)
                 http.post(content)
             } else {
                 if (httpLog)
-                    df.writeLog("get:\r\n" + url, getHttpLogFile())
+                    writeLog("get:\r\n" + url)
                 http.get()
             }
         }
@@ -239,10 +246,15 @@ open class HttpReq<T : Any>() {
         val code = http.respCode();
         isCancel()
         val respCont = http.respContentProg(progRecv)
-        if (httpLog)
-            df.writeLog("resp code: " + code + "\r\n" + respCont, getHttpLogFile())
+        if (httpLog) {
+            if (code >= 400) {
+                df.writeLog("resp code: " + code, getHttpLogFile())
+                df.writeLog("resp code: " + code + "\r\n" + respCont, getHttpErrorLogFile())
+            } else
+                df.writeLog("resp code: " + code + "\r\n" + respCont, getHttpLogFile())
+        }
 
-        return parseResp(respCont, code);
+        parseResp(respCont, code);
     }
 
 
@@ -254,41 +266,34 @@ open class HttpReq<T : Any>() {
 
     }
 
-    internal var failFun = { e: Throwable -> }
+    internal var failFun: (e: Throwable) -> Throwable? = { e: Throwable -> e }
     /**
-     * 请求失败回调
+     * 请求失败回调(运行于UI线程)
      */
-    fun failed(res: (e: Throwable) -> Unit): HttpReq<T> {
+    fun failed(res: (e: Throwable) -> Throwable?): HttpReq<T> {
         failFun = res;
         return this
     }
 
     /**
-     * 捕获到异常
+     * 捕获到异常回调,(运行于线程池,优先于failFun)
      */
-    var onFailed = { e: Throwable -> }
+    var onFailed: suspend (e: Throwable) -> Unit = { e: Throwable -> }
 
     private fun getPool() = if (postMultipartFunc != null)
         poolUpload
     else
         poolHttp
 
-    open fun runOnPool(func: (req: HttpReq<T>) -> Unit): HttpReq<T> {
-        beforRequest();
 
-        val pool = getPool()
+    /**
+     * 切换到线程池
+     */
+    suspend fun runToPool() = df.runToPool(getPool())
 
-        df.runOnPool(pool) {
-            try {
-                func(this);
-            } catch (e: Throwable) {
-                onFailed(e)
-                failFun(e)
-            }
-        }
-        return this
-    }
-
+    /**
+     * 获取http响应结果
+     */
     suspend open fun await(): T = suspendCoroutine<T> { cont ->
         beforRequest();
 
@@ -303,28 +308,15 @@ open class HttpReq<T : Any>() {
 
             } catch (e: Throwable) {
                 onFailed(e)
-                failFun(e)
                 df.runOnUi {
-                    cont.resumeWithException(e)
+                    val resE = failFun(e)
+                    if (resE != null)
+                        cont.resumeWithException(resE)
                 }
             }
         }
     }
 
-
-    /**
-     * 异步获取结果
-     */
-    open fun ok(res: (e: T) -> Unit): HttpReq<T> {
-        runOnPool {
-            val resp = request()
-            df.runOnUi {
-                afterRequest();
-                res(resp)
-            }
-        }
-        return this
-    }
 
 }
 

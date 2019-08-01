@@ -50,7 +50,7 @@ class MultipartForm(val con: HttpURLConnection, val FixedLength: Boolean = true)
                 }
 
             }
-        } catch(e: Exception) {
+        } catch (e: Exception) {
 //            Log.e("wwww", "eee", e)
         }
     }
@@ -75,8 +75,10 @@ class MultipartForm(val con: HttpURLConnection, val FixedLength: Boolean = true)
     /**
      * 添加文件字段
      */
-    fun addFile(name: String, file: File
-                , prog: (transferSize: Long, fileSize: Long) -> Unit = { t, l -> }) {
+    fun addFile(
+        name: String, file: File
+        , prog: (transferSize: Long, fileSize: Long) -> Unit = { t, l -> }
+    ) {
 
         val text = ("--$boundary\r\nContent-Disposition: form-data; name=\"$name\"; filename=\"${file.name}\"\r\n" +
                 "Content-Transfer-Encoding: binary\r\n\r\n").toByteArray()
@@ -154,7 +156,10 @@ class HttpEx(val url: String, timeOut: Int = 15 * 1000) {
     /**
      * 指定X509证书验证
      */
-    fun setSSL(ssl: javax.net.ssl.SSLSocketFactory?, hostnameVerifier: HostnameVerifier = hostnameVerifierStrict): HttpEx {
+    fun setSSL(
+        ssl: javax.net.ssl.SSLSocketFactory?,
+        hostnameVerifier: HostnameVerifier = hostnameVerifierStrict
+    ): HttpEx {
         (conn as HttpsURLConnection).hostnameVerifier = hostnameVerifier
         conn.sslSocketFactory = ssl
         return this
@@ -172,6 +177,13 @@ class HttpEx(val url: String, timeOut: Int = 15 * 1000) {
     fun setContentTypeForm() {
         setContentType("application/x-www-form-urlencoded")
     }
+
+    fun setHeader(key: String, value: String): HttpEx {
+        conn.setRequestProperty(key, value);
+        return this
+    }
+
+    fun getHeaders() = conn.requestProperties
 
     fun setKeepAlive(): HttpEx {
         conn.setRequestProperty("Connection", "keep-alive");
@@ -216,10 +228,12 @@ class HttpEx(val url: String, timeOut: Int = 15 * 1000) {
         return mul
     }
 
-    fun downloadFile(file: File,
-                     tempFile: Boolean = true,
-                     prog: (transferSize: Long, fileSize: Long) -> Unit = { t, f -> },
-                     resp: () -> Boolean = { true }) {
+    fun downloadFile(
+        file: File,
+        tempFile: Boolean = true,
+        prog: (transferSize: Long, fileSize: Long) -> Unit = { t, f -> },
+        resp: () -> Boolean = { true }
+    ) {
 
         val newFile = file + ".temp"
         val oldSize = newFile.length()
@@ -329,7 +343,10 @@ class HttpEx(val url: String, timeOut: Int = 15 * 1000) {
 
         val content_encode = conn.contentEncoding
         val buffer = ByteArray(bufferSize)
-        var inputStream = conn.inputStream
+
+
+        var inputStream = if (respCode() >= 400) conn.errorStream else conn.inputStream
+
         if (null != content_encode && content_encode.equals("gzip")) {
             inputStream = GZIPInputStream(inputStream)
         }
@@ -350,7 +367,7 @@ class HttpEx(val url: String, timeOut: Int = 15 * 1000) {
          * 验证证书域名
          */
         @JvmStatic
-        val hostnameVerifierStrict: HostnameVerifier = HostnameVerifier lam@ { s, sslSession ->
+        val hostnameVerifierStrict: HostnameVerifier = HostnameVerifier lam@{ s, sslSession ->
             val hv = HttpsURLConnection.getDefaultHostnameVerifier();
             return@lam hv.verify(s, sslSession);
         }

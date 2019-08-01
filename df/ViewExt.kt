@@ -12,12 +12,12 @@ import android.view.inputmethod.EditorInfo
 import android.widget.CompoundButton
 import android.widget.EditText
 
-fun String?.isNull(): Boolean {
+fun String?.isEmpty(): Boolean {
     if (this == null)
-        return false;
+        return true;
     if (this.length == 0)
-        return false;
-    return true;
+        return true;
+    return false;
 }
 
 val Int.resource: String

@@ -16,6 +16,7 @@ val <T : ActCompat> Class<T>.inst: T?
     get() = instAct[this.name] as T?
 
 
+
 open class ActCompat : AppCompatActivity() {
     @Throws(Exception::class)
     open fun onCreateEx() {
@@ -100,7 +101,7 @@ open class ActCompat : AppCompatActivity() {
     }
 
     /**
-     * 在onCreate之后调用
+     * 延迟加载(在onCreate之后调用)
      */
     fun <T> create(func: () -> T): BindView<T> {
         return BindView(func, createList);

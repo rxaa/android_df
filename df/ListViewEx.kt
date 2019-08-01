@@ -9,35 +9,46 @@ import android.view.ViewGroup
 import android.widget.*
 import java.util.*
 
+
+/**
+ * ListView辅助类
+ * 关联List<>数据, 并自动填充数据至ListView或LinearView或RecyclerView里
+ * 使得调用者无需关心ListView或LinearView或RecyclerView之间的差异
+ */
 class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
 
+    /**
+     * 关联的List数据
+     */
     var data = ArrayList<ListT>()
 
-    var listView: AbsListView? = null
-    internal var mCont: android.content.Context? = null
+    /**
+     * 同RecyclerView, 创建View回调
+     */
+    var onCreateView: (viewType: Int) -> ViewEx = { type -> throw Exception("Unimplement onCreateView function") }
+    /**
+     * 同RecyclerView, 显示View item回调
+     */
+    var onBindView: (vi: ViewEx, position: Int) -> Unit = { vi: ViewEx, position: Int -> }
+    /**
+     * 同RecyclerView, 获取View类型回调
+     */
+    var getViewType: (position: Int) -> Int = { position -> 0 }
 
+
+    /**
+     * item点击事件
+     */
+    var onItemClick: ((index: Int, vi: View) -> Unit)? = null
+    var onItemLongClick: ((index: Int, vi: View) -> Boolean)? = null
+
+    internal var listView: AbsListView? = null
+    internal var mCont: android.content.Context? = null
     internal var adapt: LiAdapter? = null
     internal var recyAdapter: RecyAdapter? = null;
     internal var linearView: LinearLayout? = null
     internal var _recyclerView: RecyclerView? = null
 
-    var showItem: ((index: Int, vi: View?) -> View?)? = null
-    var onItemClick: ((index: Int, vi: View) -> Unit)? = null
-    var onItemLongClick: ((index: Int, vi: View) -> Boolean)? = null
-
-
-    /**
-     * 同RecyclerView
-     */
-    var onCreateView: ((viewType: Int) -> ViewEx)? = null
-    /**
-     * 同RecyclerView
-     */
-    var onBindView: (vi: ViewEx, position: Int) -> Unit = { vi: ViewEx, position: Int -> }
-    /**
-     * 同RecyclerView
-     */
-    var getViewType: (position: Int) -> Int = { position -> 0 }
 
     init {
         if (groupView is ListView)
@@ -59,7 +70,7 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
      */
     var emptyView: View? = null;
 
-    inline fun isListView(f: (lv: ListView) -> Unit): Boolean {
+    fun isListView(f: (lv: ListView) -> Unit): Boolean {
         if (listView is ListView) {
             f(listView as ListView)
             return true
@@ -77,24 +88,45 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     }
 
     internal val headViewType = -39583;
-    internal val headViewList = ArrayList<ViewEx>();
-
-
+    internal val footViewType = -11583;
     /**
-     * 同ListView
+     * ListView head列表
      */
-    fun addHeader(view: ViewEx): ListViewEx<ListT> {
-        val listView = listView;
-        if (listView !== null && listView is ListView) {
-            listView.addHeaderView(view.getView())
+    internal val headViewList = ArrayList<ViewEx>();
+    internal val footViewList = ArrayList<ViewEx>();
+
+    fun addFooter(view: ViewEx): ListViewEx<ListT> {
+        isListView {
+            it.addHeaderView(view.getView())
         }
+
         _recyclerView.notNull {
-            headViewList.add(view);
-            val lp = RecyclerView.LayoutParams(
+            footViewList.add(view);
+            view.getView().layoutParams = RecyclerView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            view.getView().layoutParams = lp
+        }
+        linearView.notNull {
+            footViewList.add(view);
+            it.addView(view.getView())
+        }
+        return this
+    }
+
+    /**
+     * 同ListView,向List添加一个head
+     */
+    fun addHeader(view: ViewEx): ListViewEx<ListT> {
+        isListView {
+            it.addHeaderView(view.getView())
+        }
+        _recyclerView.notNull {
+            headViewList.add(view);
+            view.getView().layoutParams = RecyclerView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         }
         linearView.notNull {
             headViewList.add(view);
@@ -104,11 +136,29 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     }
 
     /**
+     * ListView
+     */
+    fun removeFooter(view: ViewEx): ListViewEx<ListT> {
+        isListView {
+            it.removeFooterView(view.getView())
+        }
+        _recyclerView.notNull {
+            footViewList.remove(view)
+        }
+        linearView.notNull {
+            footViewList.remove(view)
+            it.removeView(view.getView())
+        }
+
+        return this
+    }
+
+    /**
      * 同ListView
      */
     fun removeHeader(view: ViewEx): ListViewEx<ListT> {
         isListView {
-            it.removeView(view.getView())
+            it.removeHeaderView(view.getView())
         }
         _recyclerView.notNull {
             headViewList.remove(view)
@@ -136,6 +186,10 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         return this
     }
 
+
+    /**
+     * 添加头
+     */
     fun addHeader(view: View): ListViewEx<ListT> {
         val listView = listView;
         if (listView !== null && listView is ListView) {
@@ -249,10 +303,10 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     private fun showListItem(vi: View?, index: Int): View? {
         try {
 
-            val v = if (onCreateView != null) {
+            val v = run {
                 val ve = if (vi == null) {
                     val type = getViewType(index)
-                    onCreateView!!(type).apply {
+                    onCreateView(type).apply {
                         viewType = type
                         setViewToTag()
                     }
@@ -262,8 +316,6 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
 
                 onBindView(ve, index)
                 ve.getView()
-            } else {
-                showItem!!(index, vi)
             }
 
             if (v != null) {
@@ -297,14 +349,6 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         return vi
     }
 
-
-    fun removeAt(i: Int) {
-        data.removeAt(i)
-        if (linearView != null) {
-            linearView!!.removeViewAt(i)
-        }
-        update()
-    }
 
     /**
      * 添加一条数据
@@ -419,6 +463,9 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         return data.size
     }
 
+    /**
+     * 启用recyclerView拖拽
+     */
     fun enableDrag(onMove: (fromPosition: Int, toPosition: Int) -> Unit = { f, t -> }) {
         _recyclerView.notNull { recycler ->
             val mItemTouchHelper = ItemTouchHelper(ItemDragCallback(this, onMove))
@@ -427,7 +474,7 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     }
 
     /**
-     * 移除指定位置
+     * 移除指定位置view
      */
     fun del(i: Int) {
         data.removeAt(i)
@@ -436,6 +483,21 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         }
         update()
     }
+
+    /**
+     * 移除指定位置view
+     */
+    fun removeAt(i: Int) {
+        del(i)
+    }
+
+    /**
+     * 移除指定位置view
+     */
+    fun delete(i: Int) {
+        del(i)
+    }
+
 
     fun getData(i: Int): ListT {
         return data[i]
@@ -457,7 +519,7 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         }
 
     /**
-     * 触发view更新
+     * 触发view更新(LinearLayout需要调用updateAll更新所有行)
      */
     fun update() {
         if (adapt != null)
@@ -478,11 +540,6 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     }
 
     /**
-     * 调用update()触发
-     */
-    var onUpdate = {};
-
-    /**
      * 更新指定行view,用于LinearLayout
      */
     fun update(i: Int) {
@@ -492,6 +549,9 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         update()
     }
 
+    /**
+     * 使用制定数据更新指定行
+     */
     fun update(i: Int, dat: ListT) {
         data[i] = dat
 
@@ -502,41 +562,57 @@ class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     }
 
 
-    fun getViewByType(view: ViewEx, wtype: Int): ViewEx {
+    /**
+     * 更新所有行,用于LinearLayout
+     */
+    fun updateAll() {
+
+        if (linearView != null) {
+            data.forEachIndexed { index, listT ->
+                showListItem(linearView!!.getChildAt(index), index)
+            }
+
+        }
+
+        update()
+        onUpdate();
+    }
+
+    /**
+     * 调用update()触发
+     */
+    var onUpdate = {};
+
+
+    internal fun getViewByType(view: ViewEx, wtype: Int): ViewEx {
         if (view.viewType == wtype)
             return view;
 
-        return onCreateView!!(wtype).apply {
+        return onCreateView(wtype).apply {
             viewType = wtype;
             setViewToTag()
         }
     }
 
     inner class LiAdapter : BaseAdapter() {
-
         override fun getView(index: Int, arg1: View?, arg2: ViewGroup): View? {
             try {
-                if (onCreateView != null) {
-                    val type = getViewType(index);
-                    val vi = if (arg1 == null) {
+                val type = getViewType(index);
+                val vi = if (arg1 == null) {
 
-                        onCreateView!!(type).apply {
-                            viewType = type;
-                            setViewToTag()
-                        }
-                    } else {
-                        getViewByType(arg1.tag as ViewEx, type)
+                    onCreateView!!(type).apply {
+                        viewType = type;
+                        setViewToTag()
                     }
-
-                    onBindView(vi, index)
-                    return vi.getView()
+                } else {
+                    getViewByType(arg1.tag as ViewEx, type)
                 }
 
-                return showItem!!(index, arg1)
+                onBindView(vi, index)
+                return vi.getView()
             } catch (e: Throwable) {
                 df.logException(e, true)
             }
-
             return arg1
         }
 

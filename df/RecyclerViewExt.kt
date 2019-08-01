@@ -7,34 +7,14 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.ViewGroup
 
-fun initAdapter(re: RecyclerView, cont: Context): RecybindAdapter {
-    if (re.layoutManager == null) {
-        re.layoutManager = LinearLayoutManager(cont)
-    }
-    val ada = RecybindAdapter(re)
-    re.adapter = ada;
-    return ada;
-}
-
-class recyvlerData(
-    val list: List<Any>?,
-    val onCreate: () -> ViewEx,
-    val onBind: (view: ViewEx, dat: Any, index: Int) -> Unit,
-    val onMove: ((fromPosition: Int, toPosition: Int) -> Unit)?,
-    val view: ViewEx?
-) {
-    fun size(): Int {
-        if (list != null)
-            return list.size
-
-        return 1;
-    }
-}
 
 fun RecyclerView.update() {
     this.adapter?.notifyDataSetChanged()
 }
 
+/**
+ * 绑定一个ViewEx
+ */
 fun RecyclerView.bindView(
     cont: Context,
     view: ViewEx
@@ -52,7 +32,7 @@ fun RecyclerView.bindView(
         adapter.list.add(
             recyvlerData(
                 null,
-                { throw Exception("can not create") },
+                { throw Exception("Can not create") },
                 { view, dat, index -> },
                 null,
                 view
@@ -62,6 +42,9 @@ fun RecyclerView.bindView(
 }
 
 
+/**
+ * 绑定一个List
+ */
 fun <T, TV : ViewEx> RecyclerView.bindList(
     cont: Context,
     list: List<T>,
@@ -84,6 +67,33 @@ fun <T, TV : ViewEx> RecyclerView.bindList(
             )
         )
     }
+}
+
+
+internal fun initAdapter(re: RecyclerView, cont: Context): RecybindAdapter {
+    if (re.layoutManager == null) {
+        re.layoutManager = LinearLayoutManager(cont)
+    }
+    val ada = RecybindAdapter(re)
+    re.adapter = ada;
+    return ada;
+}
+
+class recyvlerData(
+    val list: List<Any>?,
+    val onCreate: () -> ViewEx,
+    val onBind: (view: ViewEx, dat: Any, index: Int) -> Unit,
+    val onMove: ((fromPosition: Int, toPosition: Int) -> Unit)?,
+    val view: ViewEx?
+) {
+    fun size(): Int {
+        if (list != null)
+            return list.size
+
+        return 1;
+    }
+
+
 }
 
 
@@ -110,7 +120,7 @@ class RecybindAdapter(val recyvler: RecyclerView) : RecyclerView.Adapter<RecyIte
                 return;
             }
         }
-        throw Exception("Can't find recyclerData")
+        throw Exception("can not find recyclerData")
     }
 
     override fun getItemCount(): Int {

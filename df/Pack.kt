@@ -19,7 +19,8 @@ object Pack {
      */
     fun restartAPP() {
         val intent = df.appContext!!.packageManager.getLaunchIntentForPackage(df.appContext!!.packageName)
-        val restartIntent = PendingIntent.getActivity(df.appContext!!.applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+        val restartIntent =
+            PendingIntent.getActivity(df.appContext!!.applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT)
         val mgr = df.appContext!!.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 50, restartIntent)
         android.os.Process.killProcess(android.os.Process.myPid())
@@ -31,14 +32,15 @@ object Pack {
             try {
                 deviceId = Settings.Secure.getString(df.appContext!!.contentResolver, Settings.Secure.ANDROID_ID)
 
-                if (deviceId.isNull() || "9774d56d682e549c" == deviceId) {
+                if (deviceId.isEmpty() || deviceId == "9774d56d682e549c") {
                     deviceId = (df.appContext!!.getSystemService(
-                            Context.TELEPHONY_SERVICE) as TelephonyManager).deviceId
-                    if (deviceId.isNull())
+                        Context.TELEPHONY_SERVICE
+                    ) as TelephonyManager).deviceId
+                    if (deviceId.isEmpty())
                         deviceId = Build.SERIAL
 
                 }
-            } catch(e: Throwable) {
+            } catch (e: Throwable) {
                 deviceId = Build.SERIAL
             }
         }
@@ -79,7 +81,8 @@ object Pack {
         get() {
             df.catchLog {
                 val info = df.appContext?.packageManager?.getPackageInfo(
-                        df.appContext?.packageName, 0)
+                    df.appContext?.packageName, 0
+                )
                 return info?.versionCode ?: 0;
             }
             return 0
@@ -90,7 +93,8 @@ object Pack {
         get() {
             df.catchLog {
                 val info = df.appContext?.packageManager?.getPackageInfo(
-                        df.appContext?.packageName, 0)
+                    df.appContext?.packageName, 0
+                )
                 return info?.versionName ?: "";
             }
             return ""

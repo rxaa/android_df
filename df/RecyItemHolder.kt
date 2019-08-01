@@ -20,13 +20,15 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
 
 
     override fun getItemCount(): Int {
-        return list.count() + list.headViewList.size
+        return list.count() + list.headViewList.size + list.footViewList.size
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyItemHolder {
         df.catchLog {
             if (viewType <= list.headViewType)
                 return RecyItemHolder(list.headViewList[list.headViewType - viewType])
+            else if (viewType <= list.footViewType)
+                return RecyItemHolder(list.footViewList[list.footViewType - viewType])
         }
         return RecyItemHolder(list.onCreateView!!(viewType))
     }
@@ -35,6 +37,8 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
         df.catchLog {
             if (list.headViewList.size > 0 && position < list.headViewList.size) {
                 return list.headViewType - position;
+            } else if (list.footViewList.size > 0 && position >= list.data.size + list.headViewList.size) {
+                return list.footViewType - (position - list.data.size + list.headViewList.size);
             }
 
             return list.getViewType(position - list.headViewList.size)
@@ -44,8 +48,14 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
 
     override fun onBindViewHolder(holder: RecyItemHolder, position: Int) {
         df.catchLog {
-            if (position >= list.headViewList.size) {
-                list.onBindView(holder.view, position - list.headViewList.size)
+            if (position >= list.headViewList.size && position < list.headViewList.size + list.data.size) {
+                val index = position - list.headViewList.size;
+                list.onBindView(holder.view, index)
+                if (list.onItemClick != null) {
+                    holder.view.onClick {
+                        list.onItemClick!!(index, holder.view.getView())
+                    }
+                }
             } else {
 
             }

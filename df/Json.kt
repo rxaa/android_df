@@ -124,7 +124,7 @@ object Json {
             is JsonBuilder?,
             is JSONArray?,
             is JSONObject?,
-            is Int?, is Long?, is Double?, is Boolean? -> {
+            is Int?, is Long?, is Double?, is Boolean?,is Float? -> {
                 ret.append("" + obj)
                 return
             }
