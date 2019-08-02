@@ -5,8 +5,13 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 object SqlSessionDat {
+
+
     private val classMap = ConcurrentHashMap<String, Any>()
 
+    /**
+     * 获取字段名函数列表
+     */
     val fieldNameArray = ArrayList<(addTable: Boolean) -> String>();
 
 

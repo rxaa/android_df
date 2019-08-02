@@ -16,7 +16,8 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
      * 重新打开连接
      * @param name
      */
-    @Synchronized fun open(): SqliteConnect {
+    @Synchronized
+    fun open(): SqliteConnect {
         if (db != null && db!!.isOpen)
             return this
         close()
@@ -27,7 +28,8 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
     /**
      * 打开现有的链接
      */
-    @Synchronized fun open(datab: SQLiteDatabase): SqliteConnect {
+    @Synchronized
+    fun open(datab: SQLiteDatabase): SqliteConnect {
         db = datab;
         dbName = datab.path;
         version = datab.version;
@@ -49,7 +51,8 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
     /**
      * 初始化数据库,并当需要时触发升级函数
      */
-    @Synchronized fun reInit() {
+    @Synchronized
+    fun reInit() {
         helper = Helper(dbName, version, this)
         db = helper!!.writableDatabase
         if (helper!!.needUpgrade) {
@@ -109,8 +112,10 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
      * 判断表是否存在
      */
     fun tableExist(fields: Class<*>): Boolean {
-        return getOneLong("SELECT COUNT(*) FROM sqlite_master where type='table' and name='"
-                + SqlData.getTableName(fields,false) + "'") > 0
+        return getOneLong(
+            "SELECT COUNT(*) FROM sqlite_master where type='table' and name='"
+                    + SqlData.getTableName(fields, false) + "'"
+        ) > 0
     }
 
     /**
@@ -158,7 +163,8 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
      * *
      * @throws Exception
      */
-    @Synchronized @Throws(Exception::class)
+    @Synchronized
+    @Throws(Exception::class)
     fun createTable(fields: Class<*>, drop: Boolean, name: String = "") {
 
         var tableName = name;
@@ -173,12 +179,14 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
         val indexs = ArrayList<String>()
 
         df.getClassFields(fields) { f, i ->
-            val fName = SqlData.getFieldName(f,false)
-            sqlStr.append(fName + getFieldType(f) + getFieldInfo(f) + ",")
+            val fName = SqlData.getFieldName(f, false)
+            sqlStr.append("`$fName`" + getFieldType(f) + getFieldInfo(f) + ",")
 
             if (f.getAnnotation(SqlIndex::class.java) != null) {
-                indexs.add("CREATE INDEX  IF NOT EXISTS  " + tableName + "_i_"
-                        + fName + "  ON " + tableName + " (`" + fName + "` ASC);")
+                indexs.add(
+                    "CREATE INDEX  IF NOT EXISTS  " + tableName + "_i_"
+                            + fName + "  ON $tableName (`$fName` ASC);"
+                )
             }
         }
 
@@ -232,10 +240,12 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
          */
         fun getFieldType(f: Field): String {
             if (f.type == Integer::class.java || f.type == java.lang.Long::class.java
-                    || f.type == Int::class.java || f.type == Long::class.java) {
+                || f.type == Int::class.java || f.type == Long::class.java
+            ) {
                 return " INTEGER "
             } else if (f.type == java.lang.Float::class.java || f.type == java.lang.Double::class.java
-                    || f.type == Float::class.java || f.type == Double::class.java) {
+                || f.type == Float::class.java || f.type == Double::class.java
+            ) {
                 return " REAL "
             }
 
