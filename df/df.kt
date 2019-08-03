@@ -538,6 +538,45 @@ object df {
         return ret;
     }
 
+    fun timeStrToLong(time: String): Long {
+        try {
+            if (time.length < 1)
+                return 0;
+            var sec = time.split('.');
+            if (sec.size < 1)
+                return 0;
+
+            var millsec = 0L;
+            if (sec.size == 2) {
+                if (sec[1].length > 3)
+                    millsec = sec[1].substring(0, 3).toLong();
+                else if (sec[0].length == 2)
+                    millsec = sec[1].toLong() * 10;
+                else if (sec[0].length == 1)
+                    millsec = sec[1].toLong() * 100;
+            }
+
+            var hour = sec[0].split(':');
+            if (hour.size < 1)
+                return millsec;
+
+            if (hour.size > 2) {
+                millsec += (hour[hour.size - 3]).toLong() * 60 * 60 * 1000;
+            }
+
+            if (hour.size > 1) {
+                millsec += (hour[hour.size - 2]).toLong() * 60 * 1000;
+            }
+
+            if (hour.size > 0) {
+                millsec += (hour[hour.size - 1]).toLong() * 1000;
+            }
+            return millsec;
+        } catch (e: Exception) {
+            return 0;
+        }
+    }
+
     /**
      * 弹出对话框
      */
