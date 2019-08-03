@@ -161,7 +161,12 @@ class SqlData<T : Any>(classT: Class<T>) {
 }
 
 
-class SqlSession<T : Any>(val classT: Class<T>, val connect: SqliteConnect, val sqlJoin: ISqlJoin? = null, var tableName: String = SqlData.getTableName(classT)) {
+class SqlSession<T : Any>(
+    val classT: Class<T>,
+    val connect: SqliteConnect,
+    val sqlJoin: ISqlJoin? = null,
+    var tableName: String = SqlData.getTableName(classT)
+) {
 
 
     fun getTableData() = SqlSessionDat.getClassSqlData(classT) ?: SqlData(classT);
@@ -176,6 +181,16 @@ class SqlSession<T : Any>(val classT: Class<T>, val connect: SqliteConnect, val 
     init {
         if (sqlJoin != null)
             tableName = sqlJoin.session.where;
+    }
+
+
+    fun copy(): SqlSession<T> {
+        val s = SqlSession(classT, connect, sqlJoin, tableName);
+        s.where = where;
+        s.sqlStr = sqlStr;
+        s.limit = limit
+        s.order = order;
+        return s;
     }
 
     /**
@@ -203,7 +218,11 @@ class SqlSession<T : Any>(val classT: Class<T>, val connect: SqliteConnect, val 
      * @param func on 条件表达式
      * @returns {SqlBuilder}
      */
-    private fun <T1 : Any> makeJoin(table2: Class<T1>, func: SqlOp<T>.(l: T, r: T1) -> Unit, joinStr: String): SqlJoin2<T, T1> {
+    private fun <T1 : Any> makeJoin(
+        table2: Class<T1>,
+        func: SqlOp<T>.(l: T, r: T1) -> Unit,
+        joinStr: String
+    ): SqlJoin2<T, T1> {
         if (where.isEmpty()) {
             where = tableName;
         }
@@ -332,8 +351,10 @@ class SqlSession<T : Any>(val classT: Class<T>, val connect: SqliteConnect, val 
             if (v != null && i != tableData.primaryKeyI) {
 
                 if (v is String) {
-                    sqlStr.append(tableData.getFieldNameByIndex(i) + "="
-                            + SqlData.sqlFilter(v) + ",")
+                    sqlStr.append(
+                        tableData.getFieldNameByIndex(i) + "="
+                                + SqlData.sqlFilter(v) + ","
+                    )
                 } else {
                     sqlStr.append(tableData.getFieldNameByIndex(i) + "='" + v + "',")
                 }
@@ -341,8 +362,10 @@ class SqlSession<T : Any>(val classT: Class<T>, val connect: SqliteConnect, val 
             }
         }
         sqlStr.setLength(sqlStr.length - 1)
-        sqlStr.append(" where " + tableData!!.getPrimaryKey() + "='"
-                + tableData!!.getPrimaryKeyVal(obj) + "'")
+        sqlStr.append(
+            " where " + tableData!!.getPrimaryKey() + "='"
+                    + tableData!!.getPrimaryKeyVal(obj) + "'"
+        )
 
         connect.update(sqlStr.toString())
 
@@ -525,7 +548,9 @@ class SqlSession<T : Any>(val classT: Class<T>, val connect: SqliteConnect, val 
                     Long::class.java -> {
                         fi.set(obj, cursor.getLong(i))
                     }
+                    java.lang.Float::class.java,
                     java.lang.Double::class.java,
+                    Float::class.java,
                     Double::class.java -> {
                         fi.set(obj, cursor.getDouble(i))
                     }
@@ -537,7 +562,11 @@ class SqlSession<T : Any>(val classT: Class<T>, val connect: SqliteConnect, val 
                                 v = ArrayList<Any>()
                                 fi.set(obj, v)
                             }
-                            Json.jsonToObj(JSONArray(cursor.getString(i)), v as ArrayList<Any?>, gen.actualTypeArguments[0] as Class<*>)
+                            Json.jsonToObj(
+                                JSONArray(cursor.getString(i)),
+                                v as ArrayList<Any?>,
+                                gen.actualTypeArguments[0] as Class<*>
+                            )
                         }
                     }
                     else -> {
@@ -590,25 +619,25 @@ class SqlSession<T : Any>(val classT: Class<T>, val connect: SqliteConnect, val 
 
         val Comparable<*>?.asc: T
             get() =
-            if (this is String)
-                orderAdd(this.toLong(), "asc")
-            else if (this is Long)
-                orderAdd(this.toLong(), "asc")
-            else if (this is Int)
-                orderAdd(this.toLong(), "asc")
-            else
-                obj
+                if (this is String)
+                    orderAdd(this.toLong(), "asc")
+                else if (this is Long)
+                    orderAdd(this.toLong(), "asc")
+                else if (this is Int)
+                    orderAdd(this.toLong(), "asc")
+                else
+                    obj
 
         val Comparable<*>?.desc: T
             get() =
-            if (this is String)
-                orderAdd(this.toLong(), "desc")
-            else if (this is Long)
-                orderAdd(this.toLong(), "desc")
-            else if (this is Int)
-                orderAdd(this.toLong(), "desc")
-            else
-                obj
+                if (this is String)
+                    orderAdd(this.toLong(), "desc")
+                else if (this is Long)
+                    orderAdd(this.toLong(), "desc")
+                else if (this is Int)
+                    orderAdd(this.toLong(), "desc")
+                else
+                    obj
 
         val String?.asc: T
             get() = orderAdd(this!!.toLong(), "asc")
