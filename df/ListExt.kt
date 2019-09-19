@@ -39,6 +39,9 @@ inline fun <T> arrayPairTo(
     return list
 }
 
+/**
+ * 倒序遍历
+ */
 inline fun <T> List<T>?.forEachDescIndexed(action: (Int, T) -> Boolean) {
     if (this != null) {
         for (i in this.size - 1 downTo 0) {

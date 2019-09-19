@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.support.v4.content.FileProvider
 import android.telephony.TelephonyManager
 import java.io.File
 
@@ -18,9 +19,15 @@ object Pack {
      * 重启整个APP
      */
     fun restartAPP() {
-        val intent = df.appContext!!.packageManager.getLaunchIntentForPackage(df.appContext!!.packageName)
+        val intent =
+            df.appContext!!.packageManager.getLaunchIntentForPackage(df.appContext!!.packageName)
         val restartIntent =
-            PendingIntent.getActivity(df.appContext!!.applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+            PendingIntent.getActivity(
+                df.appContext!!.applicationContext,
+                0,
+                intent,
+                PendingIntent.FLAG_ONE_SHOT
+            )
         val mgr = df.appContext!!.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 50, restartIntent)
         android.os.Process.killProcess(android.os.Process.myPid())
@@ -30,7 +37,10 @@ object Pack {
     fun getDeviceID(): String {
         if (deviceId == null) {
             try {
-                deviceId = Settings.Secure.getString(df.appContext!!.contentResolver, Settings.Secure.ANDROID_ID)
+                deviceId = Settings.Secure.getString(
+                    df.appContext!!.contentResolver,
+                    Settings.Secure.ANDROID_ID
+                )
 
                 if (deviceId.isEmpty() || deviceId == "9774d56d682e549c") {
                     deviceId = (df.appContext!!.getSystemService(
@@ -54,15 +64,31 @@ object Pack {
 
     @JvmStatic
     fun installApp(cont: Context?, app: File) {
-        //创建URI
-        val uri = Uri.fromFile(app)
-        //创建Intent意图
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK//启动新的activity
-        //设置Uri和类型
-        intent.setDataAndType(uri, "application/vnd.android.package-archive")
-        //执行安装
-        cont?.startActivity(intent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val install = Intent(Intent.ACTION_VIEW)
+            install.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            //7.0获取存储文件的uri
+            val uri = FileProvider.getUriForFile(
+                cont!!,
+                df.appContext!!.packageName + ".fileprovider",
+                app
+            );
+            //赋予临时权限
+            install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            //设置dataAndType
+            install.setDataAndType(uri, "application/vnd.android.package-archive");
+            cont?.startActivity(install)
+        } else {
+            //创建URI
+            val uri = Uri.fromFile(app)
+            //创建Intent意图
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK//启动新的activity
+            //设置Uri和类型
+            intent.setDataAndType(uri, "application/vnd.android.package-archive")
+            //执行安装
+            cont?.startActivity(intent)
+        }
     }
 
 
@@ -87,6 +113,20 @@ object Pack {
             }
             return 0
         }
+
+    fun versionToLong(ver: String): Long {
+        var res = 0L;
+        val strs = ver.split(".");
+
+        val len = arrayOf(1000000000, 1000000, 1000, 1, 1, 1, 1);
+        for (i in 0 until strs.size) {
+            res += strs[i].toLong() * len[i];
+            if (i >= 3) {
+                break;
+            }
+        }
+        return res;
+    }
 
     @JvmStatic
     val versionName: String

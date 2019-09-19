@@ -410,6 +410,7 @@ object Json {
                         }
                     }
                 }
+                java.lang.Boolean::class.java,
                 Boolean::class.java -> {
                     val r = json.opt(f.name) ?: return@getClassFields
                     if (r is Boolean) {

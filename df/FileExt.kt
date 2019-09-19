@@ -350,8 +350,11 @@ inline fun InputStream.readAll(
     func: (readByte: Int) -> Unit
 ) {
     var bytesRead = 0
-
-    while (this.read(buffer, byteOffset, byteCount).apply { bytesRead = this } >= 0) {
+    while (true) {
+        bytesRead = this.read(buffer, byteOffset, byteCount);
+        if (bytesRead <= 0) {
+            break;
+        }
         func(bytesRead)
     }
 }

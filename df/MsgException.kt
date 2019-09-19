@@ -33,6 +33,11 @@ class MsgException : Exception {
         this.code = code;
     }
 
+    constructor(msg: String, show: Boolean) : // TODO Auto-generated constructor stub
+            super(msg) {
+        this.showAble = show;
+    }
+
     constructor(msg: String, code: Int, show: Boolean) : // TODO Auto-generated constructor stub
             super(msg) {
         this.code = code;

@@ -280,11 +280,14 @@ class HttpEx(val url: String, timeOut: Int = 15 * 1000) {
                 rand.seek(oldSize);
             }
 
+            var now = 0L;
             respContent { bytes, size ->
                 rand.write(bytes, 0, size)
                 transferLen += size
-
-                prog(transferLen, fileSize)
+                if (System.currentTimeMillis() - now > 100) {
+                    prog(transferLen, fileSize)
+                    now = System.currentTimeMillis();
+                }
             }
         }
 

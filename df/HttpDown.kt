@@ -16,12 +16,12 @@ open class HttpDown {
         /**
          * 数据请求链接池
          */
-        val pool = Executors.newFixedThreadPool(1)
+        val pool = Executors.newFixedThreadPool(2)
 
         /**
          * 在线程池中run
          */
-        fun runPool(func:suspend () -> Unit) {
+        fun runPool(func: suspend () -> Unit) {
             df.runOnPool(pool, func)
         }
 
@@ -74,12 +74,18 @@ open class HttpDown {
         isCancel = true;
     }
 
-
     /**
      * 开始下载任务,回调函数中参数Exception的值为null表示下载成功,否则失败
      */
     open fun start(res: (e: Exception?) -> Unit): HttpDown {
-        val http = HttpEx(url);
+
+
+        val http = try {
+            HttpEx(url);
+        } catch (e: Exception) {
+            res(e)
+            return this;
+        }
         isCancel = false;
         runPool {
             var ex: Exception? = null;
@@ -98,7 +104,7 @@ open class HttpDown {
                             throw MsgException("取消下载", ExceptionCode.cancelHttp.ordinal)
                         }
                     })
-                } catch(e: Exception) {
+                } catch (e: Exception) {
                     ex = e;
                 }
             }

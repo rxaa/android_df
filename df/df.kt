@@ -649,8 +649,15 @@ object df {
     fun logException(arg1: Throwable, msgDialog: Boolean = true, msg: String = "") {
         Log.e("wwwwwwwwwwwwww" + msg, "error", arg1)
         df.writeLog(msg + "--------\r\n" + getStackTraceInfo(arg1))
-        if (msgDialog)
-            msgDialog(arg1.message, dfStr.error)
+        if (msgDialog) {
+            if (arg1 is MsgException) {
+                if (arg1.showAble)
+                    df.msg(arg1.message)
+            } else {
+                msgDialog(arg1.message, dfStr.error)
+            }
+
+        }
     }
 
     @JvmStatic
