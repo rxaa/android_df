@@ -239,7 +239,10 @@ class SqlSession<T : Any>(
      * @param func on 条件表达式
      * @returns {SqlBuilder}
      */
-    fun <T1 : Any> innerJoin(right: Class<T1>, func: SqlOp<T>.(l: T, r: T1) -> Unit): SqlJoin2<T, T1> {
+    fun <T1 : Any> innerJoin(
+        right: Class<T1>,
+        func: SqlOp<T>.(l: T, r: T1) -> Unit
+    ): SqlJoin2<T, T1> {
         return this.makeJoin(right, func, " inner join ");
     }
 
@@ -249,7 +252,10 @@ class SqlSession<T : Any>(
      * @param func on 条件表达式
      * @returns {SqlBuilder}
      */
-    fun <T2 : Any> leftJoin(right: Class<T2>, func: SqlOp<T>.(l: T, r: T2) -> Unit): SqlJoin2<T, T2> {
+    fun <T2 : Any> leftJoin(
+        right: Class<T2>,
+        func: SqlOp<T>.(l: T, r: T2) -> Unit
+    ): SqlJoin2<T, T2> {
         return this.makeJoin(right, func, " left join ");
     }
 
@@ -259,20 +265,15 @@ class SqlSession<T : Any>(
      * @param func on 条件表达式
      * @returns {SqlBuilder}
      */
-    fun <T1 : Any> rightJoin(right: Class<T1>, func: SqlOp<T>.(l: T, r: T1) -> Unit): SqlJoin2<T, T1> {
+    fun <T1 : Any> rightJoin(
+        right: Class<T1>,
+        func: SqlOp<T>.(l: T, r: T1) -> Unit
+    ): SqlJoin2<T, T1> {
         return this.makeJoin(right, func, " right join ");
     }
 
-    /**
-     * 插入一个对象
-     */
-    @JvmOverloads
-    @Throws(Exception::class)
-    fun insert(obj: T?, ignoreAutoInc: Boolean = true): SqlSession<T> {
-        if (obj == null)
-            return this
-        initSql()
-        sqlStr.append("insert into ${tableName} (${tableData.fieldsStr}) values(")
+    private fun initInto(obj: T, prefix: String = "insert", ignoreAutoInc: Boolean = true) {
+        sqlStr.append(prefix + " into ${tableName} (${tableData.fieldsStr}) values(")
         for (f in tableData!!.fields) {
             val v = getFieldString(f, obj)
 
@@ -290,9 +291,33 @@ class SqlSession<T : Any>(
 
         sqlStr.setLength(sqlStr.length - 1)
         sqlStr.append(")")
+    }
 
+    /**
+     * 插入一个对象
+     */
+    @JvmOverloads
+    @Throws(Exception::class)
+    fun insert(obj: T?, ignoreAutoInc: Boolean = true): SqlSession<T> {
+        if (obj == null)
+            return this
+        initSql()
+        initInto(obj, "insert", ignoreAutoInc)
         connect.update(sqlStr.toString())
+        return this
+    }
 
+
+    /**
+     * 替换一个对象
+     */
+    @Throws(Exception::class)
+    fun replaceInto(obj: T?): SqlSession<T> {
+        if (obj == null)
+            return this
+        initSql()
+        initInto(obj, "replace", false)
+        connect.update(sqlStr.toString())
         return this
     }
 
@@ -726,11 +751,18 @@ class SqlSession<T : Any>(
     /**
      * where,and,or的操作函数
      */
-    class SqlOp<T : Any>(private val obj: T, private val sql: SqlSession<T>, val addTableName: Boolean = false) {
+    class SqlOp<T : Any>(
+        private val obj: T,
+        private val sql: SqlSession<T>,
+        val addTableName: Boolean = false
+    ) {
 
         private fun whereAdd(i: Long, op: String, value: String) {
             sql.where += " ";
-            sql.where += SqlSessionDat.getFieldName(i.toInt(), addTableName) + " " + op + " " + value + " "
+            sql.where += SqlSessionDat.getFieldName(
+                i.toInt(),
+                addTableName
+            ) + " " + op + " " + value + " "
         }
 
         fun String?.eq(r: String): SqlOp<T> {
@@ -746,7 +778,10 @@ class SqlSession<T : Any>(
 
 
         fun String?.`in`(r: List<String>): SqlOp<T> {
-            whereAdd(this!!.toLong(), "in", "(" + r.joinToString(",") { SqlData.sqlFilter(it) } + ")")
+            whereAdd(
+                this!!.toLong(),
+                "in",
+                "(" + r.joinToString(",") { SqlData.sqlFilter(it) } + ")")
             return this@SqlOp
         }
 
@@ -761,7 +796,10 @@ class SqlSession<T : Any>(
         }
 
         fun String?.notIn(r: List<String>): SqlOp<T> {
-            whereAdd(this!!.toLong(), "not int", "(" + r.joinToString(",") { SqlData.sqlFilter(it) } + ")")
+            whereAdd(
+                this!!.toLong(),
+                "not int",
+                "(" + r.joinToString(",") { SqlData.sqlFilter(it) } + ")")
             return this@SqlOp
         }
 

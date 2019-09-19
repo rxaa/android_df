@@ -184,7 +184,7 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
 
             if (f.getAnnotation(SqlIndex::class.java) != null) {
                 indexs.add(
-                    "CREATE INDEX  IF NOT EXISTS  " + tableName + "_i_"
+                    "CREATE INDEX  IF NOT EXISTS  " + tableName.replace("`","") + "_i_"
                             + fName + "  ON $tableName (`$fName` ASC);"
                 )
             }

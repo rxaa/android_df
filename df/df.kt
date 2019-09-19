@@ -339,7 +339,8 @@ object df {
     @JvmStatic
     fun getExternalDir(): File {
         try {
-            val sdCardExist = Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED   //判断sd卡是否存在
+            val sdCardExist =
+                Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED   //判断sd卡是否存在
             if (sdCardExist) {
                 return Environment.getExternalStorageDirectory()//获取跟目录
             }
@@ -355,7 +356,11 @@ object df {
      */
     @JvmStatic
     @JvmOverloads
-    inline fun <T> getClassFields(clas: Class<T>, hasFinal: Boolean = false, func: (field: Field, i: Int) -> Unit) {
+    inline fun <T> getClassFields(
+        clas: Class<T>,
+        hasFinal: Boolean = false,
+        func: (field: Field, i: Int) -> Unit
+    ) {
         var i = -1;
         for (f in clas.declaredFields) {
             if (Modifier.isStatic(f.modifiers))
@@ -538,6 +543,13 @@ object df {
         return ret;
     }
 
+    var getItem: (key: String) -> String? = {
+        null
+    }
+    var setItem: (key: String, value: String) -> Unit = { k, v ->
+
+    }
+
     fun timeStrToLong(time: String): Long {
         try {
             if (time.length < 1)
@@ -595,9 +607,11 @@ object df {
                 if (cont != null)
                     bu.setMessage(cont)
 
-                val alert = bu.setPositiveButton(dfStr.ok, DialogInterface.OnClickListener { dialogInterface, i ->
-                    df.catchLog { onOk() }
-                }).create()
+                val alert = bu.setPositiveButton(
+                    dfStr.ok,
+                    DialogInterface.OnClickListener { dialogInterface, i ->
+                        df.catchLog { onOk() }
+                    }).create()
                 alert.show()
             }
 
@@ -615,31 +629,36 @@ object df {
     /**
      * 弹出对话框
      */
-    suspend fun msgDialogAwait(cont: String?, title: String? = "") = suspendCoroutine<Boolean> { conti ->
-        df.actStack.lastItem { act ->
-            df.runOnUiCheck {
-                val bu = AlertDialog.Builder(act)
-                bu.setCancelable(false)
-                title.notEmpty {
-                    bu.setTitle(title)
+    suspend fun msgDialogAwait(cont: String?, title: String? = "") =
+        suspendCoroutine<Boolean> { conti ->
+            df.actStack.lastItem { act ->
+                df.runOnUiCheck {
+                    val bu = AlertDialog.Builder(act)
+                    bu.setCancelable(false)
+                    title.notEmpty {
+                        bu.setTitle(title)
+                    }
+
+                    if (cont != null)
+                        bu.setMessage(cont)
+
+                    val alert = bu.setPositiveButton(
+                        dfStr.ok,
+                        DialogInterface.OnClickListener { dialogInterface, i ->
+                            df.catchLog { conti.resume(true) }
+                        }).setNegativeButton(
+                        dfStr.cancel,
+                        DialogInterface.OnClickListener { dialogInterface, i ->
+                            df.catchLog { conti.resume(false) }
+                        })
+                        .create()
+                    alert.show()
                 }
-
-                if (cont != null)
-                    bu.setMessage(cont)
-
-                val alert = bu.setPositiveButton(dfStr.ok, DialogInterface.OnClickListener { dialogInterface, i ->
-                    df.catchLog { conti.resume(true) }
-                }).setNegativeButton(dfStr.cancel, DialogInterface.OnClickListener { dialogInterface, i ->
-                    df.catchLog { conti.resume(false) }
-                })
-                    .create()
-                alert.show()
+            }.isNull {
+                msg(cont)
+                conti.resume(false)
             }
-        }.isNull {
-            msg(cont)
-            conti.resume(false)
         }
-    }
 
     /**
      * 将异常写入日志
@@ -699,7 +718,8 @@ object df {
      */
     @JvmStatic
     fun imeOpen(vi: View) {
-        val imm = df.appContext!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm =
+            df.appContext!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         vi.setFocusable(true);
         vi.requestFocus();
         if (df.appContext!!.resources.configuration.keyboard == Configuration.KEYBOARD_NOKEYS)
@@ -711,7 +731,8 @@ object df {
      */
     @JvmStatic
     fun imeIsOpen(): Boolean {
-        val imm = df.appContext!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm =
+            df.appContext!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         return imm.isActive
     }
 
@@ -720,13 +741,15 @@ object df {
      */
     @JvmStatic
     fun imeClose(vi: View) {
-        val imm = df.appContext!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm =
+            df.appContext!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(vi.windowToken, 0)
     }
 
     @JvmStatic
     fun imeClose() {
-        val imm = df.appContext!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm =
+            df.appContext!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(null, 0)
     }
 

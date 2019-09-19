@@ -143,7 +143,11 @@ open class HttpReq<T : Any>() {
     internal fun isCancel() {
         acti.notNull {
             if (it.isFinishing)
-                throw MsgException("取消传输,activity close", ExceptionCode.activityClosed.ordinal, false)
+                throw MsgException(
+                    "取消传输,activity close",
+                    ExceptionCode.activityClosed.ordinal,
+                    false
+                )
         }
 
         if (isCancel)
@@ -246,6 +250,7 @@ open class HttpReq<T : Any>() {
         val code = http.respCode();
         isCancel()
         val respCont = http.respContentProg(progRecv)
+        respText = respCont;
         if (httpLog) {
             if (code >= 400) {
                 df.writeLog("resp code: " + code, getHttpLogFile())
@@ -292,9 +297,47 @@ open class HttpReq<T : Any>() {
     suspend fun runToPool() = df.runToPool(getPool())
 
     /**
+     * 缓存回调
+     */
+    private var bufferFunc: (suspend (dat: T) -> Unit)? = null;
+
+
+    /**
+     * 开启接口缓存（开启后await()返回缓存数据，bufferFunc回调返回远程数据）
+     * @param func
+     */
+    fun buffer(func: (suspend (dat: T) -> Unit)?): HttpReq<T> {
+        this.bufferFunc = func;
+        return this;
+    }
+
+    var respText = "";
+
+    /**
      * 获取http响应结果
      */
     suspend open fun await(): T = suspendCoroutine<T> { cont ->
+        var key = "";
+
+        if (this.bufferFunc != null) {
+            //尝试从缓存中获取
+            key = this.url + Json.objToJson(paras);
+            val res = df.getItem(key);
+            if (res != null) {//找到缓存
+                df.runOnPool(getPool()) {
+                    val resp = request()
+                    df.runOnUi {
+                        df.setItem(key, respText);
+                        df.launch {
+                            this.bufferFunc!!(resp);
+                        }
+                    }
+                }
+                cont.resume(parseResp(res, 200))
+                return@suspendCoroutine
+            }
+        }
+
         beforRequest();
 
         val pool = getPool()
@@ -302,6 +345,8 @@ open class HttpReq<T : Any>() {
             try {
                 val resp = request()
                 df.runOnUi {
+                    if (this.bufferFunc != null)//缓存
+                        df.setItem(key, respText);
                     afterRequest();
                     cont.resume(resp)
                 }
