@@ -1,14 +1,14 @@
 package rxaa.df
 
 import android.graphics.Color
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.ViewGroup
 import org.jetbrains.annotations.NotNull
 import java.util.*
 import java.util.Collections.swap
 import android.graphics.Color.LTGRAY
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 
 
 class RecyItemHolder(val view: ViewEx) : RecyclerView.ViewHolder(view.getView()) {

@@ -4,13 +4,13 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.os.Build
-import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.CompoundButton
 import android.widget.EditText
+import androidx.recyclerview.widget.RecyclerView
 
 fun String?.isEmpty(): Boolean {
     if (this == null)

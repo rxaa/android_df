@@ -5,8 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.os.Handler
-import android.support.v4.view.PagerAdapter
-import android.support.v4.view.ViewPager
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -14,8 +12,8 @@ import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import rxaa.df.ViewEx
-import rxaa.df.df
+import androidx.viewpager.widget.PagerAdapter
+import androidx.viewpager.widget.ViewPager
 import java.util.*
 
 class ViewPageEx : ViewPager {

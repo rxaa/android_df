@@ -2,8 +2,8 @@ package rxaa.df
 
 import android.app.Activity
 import android.content.pm.PackageManager
-import android.support.v4.app.ActivityCompat
 import android.view.View
+import androidx.core.app.ActivityCompat
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
