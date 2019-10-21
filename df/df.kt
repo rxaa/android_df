@@ -811,4 +811,17 @@ object df {
         }
         return name + "_new." + ext;
     }
+
+    inline fun retry(time: Int, function: () -> Unit) {
+        for(i in 0 until time){
+            try {
+                function();
+                break;
+            } catch (e: Throwable) {
+
+            }
+        }
+
+
+    }
 }
