@@ -1,9 +1,46 @@
 package rxaa.df
 
 import android.content.Context
+import android.os.Build
 import android.os.PowerManager
+import androidx.core.content.ContextCompat.getSystemService
+import android.app.AlarmManager
+import android.R.string.no
+import android.app.PendingIntent
+import android.content.Intent
+import com.qpe.qplink.service.DownloadService
+
 
 object WakeLock {
+
+    val rtcWakeUpName = "rtcWakeUp"
+
+    /**
+     * 设置一次定时唤醒
+     */
+    fun rtcWakeUp(time: Long, service: Class<*>, valu: String = "") {
+        val am = df.appContext!!.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val intent = Intent(df.appContext, service)
+        intent.putExtra(rtcWakeUpName, valu);
+        val pi =
+            PendingIntent.getService(df.appContext, 0, intent, 0)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                am.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    System.currentTimeMillis() + time,
+                    pi
+                )
+            } else {
+                am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + time, pi);
+            }
+        } else {
+            am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + time, pi);
+        }
+    }
+
 
     /**
      * 后台唤醒，不点亮屏幕(默认唤醒30秒)
