@@ -53,6 +53,11 @@ object Pack {
             } catch (e: Throwable) {
                 deviceId = Build.SERIAL
             }
+            if (deviceId.isEmpty()) {
+                //都没有则自己创建一个
+                deviceId = dfCfg.cfgFile.dat.deviceId;
+                dfCfg.cfgFile.save()
+            }
         }
         return deviceId!!;
     }
