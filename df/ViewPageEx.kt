@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import java.util.*
@@ -85,6 +86,15 @@ class ViewPageEx : ViewPager {
     @JvmOverloads
     fun addListView(cont: Context, onSelected: () -> Unit = {}): ListView {
         val lv = newListView(cont)
+        viewList.add(lv)
+        viewSelectList.add(onSelected)
+        init()
+        return lv
+    }
+
+    @JvmOverloads
+    fun addRecyclerView(cont: Context, onSelected: () -> Unit = {}): RecyclerView {
+        val lv = RecyclerView(cont)
         viewList.add(lv)
         viewSelectList.add(onSelected)
         init()
@@ -245,7 +255,7 @@ class ViewPageEx : ViewPager {
         if (noInit) {
             noInit = false
             df.runOnUi {
-                setOnPageChangeListener(onChange)
+                addOnPageChangeListener(onChange)
                 adapter = pagerAdapter
                 startAutoPlay()
 
