@@ -8,7 +8,6 @@ import android.app.AlarmManager
 import android.R.string.no
 import android.app.PendingIntent
 import android.content.Intent
-import com.qpe.qplink.service.DownloadService
 
 
 object WakeLock {

@@ -372,6 +372,10 @@ class SqlSession<T : Any>(
         var i = -1
         for (f in tableData.fields) {
             i++;
+            if (f.getAnnotation(NotUpdate::class.java) != null) {
+                continue
+            }
+
             val v = getFieldString(f, obj);
             if (v != null && i != tableData.primaryKeyI) {
 

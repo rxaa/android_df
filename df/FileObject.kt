@@ -32,8 +32,8 @@ class FileObject<T : Any>(private val clas: Class<T>, private val fileName: File
      * 文件目录
      */
     val file: File
-        //get() = fileName ?: df.getInnerFileDir().addMenu(clas.name);
-        get() = fileName ?: df.getFileDir().addMenu(clas.name);
+        get() = fileName ?: df.getInnerFileDir().addMenu(clas.name);
+        //get() = fileName ?: df.getFileDir().addMenu(clas.name);
 
     /**
      * 重新读取文件

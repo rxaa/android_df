@@ -11,8 +11,10 @@ import android.graphics.drawable.Drawable
 import android.media.ExifInterface
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import android.widget.ImageView
+import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -69,7 +71,10 @@ object Pic {
         try {
             val exifInterface = ExifInterface(path)
             val orientation =
-                exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+                exifInterface.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL
+                )
             return orientation
         } catch (e: Exception) {
             e.printStackTrace()
@@ -91,7 +96,10 @@ object Pic {
         try {
             val exifInterface = ExifInterface(path)
             val orientation =
-                exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+                exifInterface.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL
+                )
             when (orientation) {
                 ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
                 ExifInterface.ORIENTATION_ROTATE_180 -> degree = 180
@@ -472,11 +480,11 @@ object Pic {
 
     @JvmStatic
     val cameraFile: File
-        get() = (df.getCacheDir() + "/camera.jpg")
+        get() = (df.getInnerCacheDir() + "/camera.jpg")
 
     @JvmStatic
     val cropFile: File
-        get() = (df.getCacheDir() + "/crop.png")
+        get() = (df.getInnerCacheDir() + "/crop.png")
 
     /**
      * 拍照
@@ -490,21 +498,42 @@ object Pic {
         try {
             // mCurrentPhotoFile = new File(PHOTO_DIR, mFileName);
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE, null)
-            intent.putExtra(
-                MediaStore.EXTRA_OUTPUT,
-                Uri.fromFile(cameraFile)
-            )
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                //7.0获取存储文件的uri
+                val uri = FileProvider.getUriForFile(
+                    df.appContext!!,
+                    df.appContext!!.packageName + ".fileprovider",
+                    cameraFile
+                );
+                intent.putExtra(
+                    MediaStore.EXTRA_OUTPUT,
+                    uri
+                )
+            } else {
+                intent.putExtra(
+                    MediaStore.EXTRA_OUTPUT,
+                    Uri.fromFile(cameraFile)
+                )
+            }
+
             takePhotoFunc = res
             act.startActivityForResult(intent, takePhotoTag)
 
         } catch (e: Exception) {
 
-            df.msg("没有摄像头!")
+            df.msg("摄像头启动失败!")
             df.logException(e, false)
             takePhotoFunc = null
 
         }
 
+    }
+
+    suspend fun awaitTakePhoto(act: Activity) = suspendCoroutine<String> { conti ->
+        takePhoto(act, Func1 { res ->
+            conti.resume(res)
+        })
     }
 
     /**

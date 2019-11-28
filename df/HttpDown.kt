@@ -12,11 +12,12 @@ open class HttpDown {
         this.url = url;
     }
 
+
     companion object {
         /**
          * 数据请求链接池
          */
-        val pool = Executors.newFixedThreadPool(2)
+        val pool = Executors.newFixedThreadPool(1)
 
         /**
          * 在线程池中run
@@ -74,6 +75,10 @@ open class HttpDown {
         isCancel = true;
     }
 
+    open fun onHttp(ht: HttpEx) {
+
+    }
+
     /**
      * 开始下载任务,回调函数中参数Exception的值为null表示下载成功,否则失败
      */
@@ -86,6 +91,7 @@ open class HttpDown {
             res(e)
             return this;
         }
+        onHttp(http)
         isCancel = false;
         runPool {
             var ex: Exception? = null;

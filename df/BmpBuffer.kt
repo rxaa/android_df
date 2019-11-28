@@ -7,15 +7,15 @@ import java.util.*
 
 
 class BmpBuffer(
-        /**
-         * 图片内存缓存个数
-         */
-        var bufferCount: Int = 20,
+    /**
+     * 图片内存缓存个数
+     */
+    var bufferCount: Int = 10,
 
-        /**
-         * 自定义图片读取函数
-         */
-        customReadBitmap: ((menu: String) -> Bitmap?)? = null
+    /**
+     * 自定义图片读取函数
+     */
+    customReadBitmap: ((menu: String) -> Bitmap?)? = null
 ) {
 
     var readBitmapFunc = fun(menu: String): Bitmap? {
@@ -59,6 +59,19 @@ class BmpBuffer(
 
     fun setImage(url: File, img: ImageView, cache: Boolean = true) {
         setImage(url.toString(), img, cache);
+    }
+
+    fun setImage(url: File, img: ImageView, maxWidth: Float, cache: Boolean = true) {
+        get(url.toString(), cache) {
+            var w = df.dp2px(maxWidth)
+            if (it.width < w)
+                w = it.width
+            val lay = img.layoutParams
+            lay.width = w;
+            lay.height = w * it.height / it.width
+            img.layoutParams = lay
+            img.setImageBitmap(it)
+        }
     }
 
     fun setImage(url: String, img: ImageView, cache: Boolean = true) {

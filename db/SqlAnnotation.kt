@@ -29,6 +29,13 @@ annotation class TableName(val value: String)
 annotation class SqlIgnore
 
 /**
+ * 标识sqlite忽略更新的字段
+ */
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FIELD)
+annotation class NotUpdate
+
+/**
  * 标识sqlite唯一
  */
 @Retention(AnnotationRetention.RUNTIME)
@@ -74,4 +81,6 @@ annotation class SqlDefault(val value: String)
 
 @Target(AnnotationTarget.FIELD)
 annotation class SqlJSON
+
+
 

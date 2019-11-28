@@ -375,6 +375,19 @@ object df {
         }
     }
 
+    @JvmStatic
+    fun getInnerCacheDir(): File {
+        try {
+            val f2 = appContext?.cacheDir
+            if (f2 != null)
+                return f2;
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return File("/sdcard/")
+    }
 
     @JvmStatic
     fun getCacheDir(): File {
