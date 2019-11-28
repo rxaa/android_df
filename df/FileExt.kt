@@ -195,7 +195,7 @@ object FileExt {
     @JvmStatic
     fun suffixIsPic(suff: String): Boolean {
         if (suff == "jpg" || suff == "jpeg" || suff == "png"
-            || suff == "bmp" || suff == "gif" || suff == "tif"
+            || suff == "bmp" || suff == "gif" || suff == "tif"|| suff == "webp"
         )
             return true
 
@@ -207,6 +207,28 @@ object FileExt {
         if (suff == "mp3" || suff == "mid" || suff == "wav" || suff == "wma"
             || suff == "ape"
             || suff == "flac"
+            || suff == "m4a"
+            || suff == "ogg"
+            || suff == "aac"
+            || suff == "mka"
+        )
+            return true
+
+        return false
+    }
+
+    @JvmStatic
+    fun suffixIsVideo(suff: String): Boolean {
+        if (suff == "mp4" || suff == "mkv" || suff == "mov" || suff == "flv"
+            || suff == "webm"
+            || suff == "avi"
+            || suff == "3gp"
+            || suff == "mpeg"
+            || suff == "mts"
+            || suff == "ts"
+            || suff == "vob"
+            || suff == "mpg"
+            || suff == "wmv"
         )
             return true
 
