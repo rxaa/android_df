@@ -11,10 +11,8 @@ import android.graphics.drawable.Drawable
 import android.media.ExifInterface
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
 import android.widget.ImageView
-import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -223,61 +221,6 @@ object Pic {
         return null
     }
 
-    @JvmStatic
-    @JvmOverloads
-    fun readBitmap(url: String, cfg: Bitmap.Config = Bitmap.Config.ARGB_8888): Bitmap? {
-        try {
-            val opt = BitmapFactory.Options()
-            opt.inPreferredConfig = cfg
-            // 获取资源图片
-            return BitmapFactory.decodeFile(url, opt)
-        } catch (e: Throwable) {
-            // TODO Auto-generated catch block
-        }
-
-        return null
-    }
-
-    /**
-     * 读取并压缩图片
-
-     * @param url
-     * *
-     * @param width 压缩宽度
-     * *
-     * @return
-     */
-    @JvmStatic
-    fun readBitmap(url: String, width: Int, cfg: Bitmap.Config = Bitmap.Config.ARGB_8888): Bitmap? {
-        var width = width
-        try {
-            val size = readBmpSize(url)
-            if (width < 1) {
-                width = displaySize[0]
-            }
-
-            var i = 1
-            while (i <= 1024) {
-                if (width * i > size[0]) {
-                    break
-                }
-                i *= 2
-            }
-
-            i /= 2
-
-            val options = BitmapFactory.Options()
-            options.inSampleSize = i
-            options.inPreferredConfig = cfg
-            val bmp = BitmapFactory.decodeFile(url, options)
-            return bmp
-        } catch (e: Throwable) {
-            // TODO Auto-generated catch block
-
-        }
-
-        return null
-    }
 
     /**
      * 读取图片的长宽像素
@@ -286,22 +229,24 @@ object Pic {
      * *
      * @return
      */
-    fun readBmpSize(url: String): IntArray {
-
+    fun readBmpSize(url: String): BitmapFactory.Options {
+        val bmpFactoryOptions = BitmapFactory.Options()
+        bmpFactoryOptions.inJustDecodeBounds = true
         try {
-            val bmpFactoryOptions = BitmapFactory.Options()
-            bmpFactoryOptions.inJustDecodeBounds = true
             BitmapFactory.decodeFile(url, bmpFactoryOptions)
-            return intArrayOf(bmpFactoryOptions.outWidth, bmpFactoryOptions.outHeight)
+            return bmpFactoryOptions
 
         } catch (e: Throwable) {
             // TODO Auto-generated catch block
-
         }
 
-        return intArrayOf(0, 0)
+        return bmpFactoryOptions
     }
 
+    @JvmStatic
+    fun getMinVal(v1: Int, v2: Int): Int {
+        return if (v1 < v2) v1 else v2
+    }
 
     @JvmStatic
     fun getMinVal(list: IntArray): Int {
@@ -315,6 +260,35 @@ object Pic {
     }
 
 
+    //显示原始大图
+    fun readOriBitmap(url: String): Bitmap? {
+        try {
+            val type = readBmpSize(url)
+
+            var i = 1
+            for (outCount in 0..6) {
+                try {
+                    val options = BitmapFactory.Options()
+                    options.inSampleSize = i
+                    if (type.outMimeType.contains("jpeg"))
+                        options.inPreferredConfig = Bitmap.Config.RGB_565
+                    else
+                        options.inPreferredConfig = Bitmap.Config.ARGB_8888
+                    val bmp = BitmapFactory.decodeFile(url, options)
+                    return bmp
+                } catch (e: OutOfMemoryError) {
+                    i *= 2
+                }
+
+            }
+        } catch (e: Throwable) {
+            // TODO Auto-generated catch block
+
+        }
+
+        return null
+    }
+
     /**
      * 读取超大图片,根据屏幕分辩率自动压缩
 
@@ -323,13 +297,18 @@ object Pic {
      * @return
      */
     @JvmStatic
-    fun readBigBitmap(url: String): Bitmap? {
+    @JvmOverloads
+    fun readBigBitmap(url: String, minSize: Int = 0): Bitmap? {
         try {
-            val w = getMinVal(readBmpSize(url))
+            val type = readBmpSize(url)
+            val w = getMinVal(type.outHeight, type.outWidth)
 
-            var sw = getMinVal(displaySize)
-            if (sw < 360)
-                sw = 360;
+            var sw = if (minSize > 0)
+                minSize
+            else {
+                getMinVal(displaySize)
+            }
+
 
             var i = 1
             while (i <= 1024) {
@@ -343,11 +322,15 @@ object Pic {
             if (i <= 0)
                 i = 1;
 
+
             for (outCount in 0..6) {
                 try {
                     val options = BitmapFactory.Options()
                     options.inSampleSize = i
-                    options.inPreferredConfig = Bitmap.Config.ARGB_8888
+                    if (type.outMimeType.contains("jpeg"))
+                        options.inPreferredConfig = Bitmap.Config.RGB_565
+                    else
+                        options.inPreferredConfig = Bitmap.Config.ARGB_8888
                     val bmp = BitmapFactory.decodeFile(url, options)
                     return bmp
                 } catch (e: OutOfMemoryError) {
@@ -498,25 +481,10 @@ object Pic {
         try {
             // mCurrentPhotoFile = new File(PHOTO_DIR, mFileName);
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE, null)
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                //7.0获取存储文件的uri
-                val uri = FileProvider.getUriForFile(
-                    df.appContext!!,
-                    df.appContext!!.packageName + ".fileprovider",
-                    cameraFile
-                );
-                intent.putExtra(
-                    MediaStore.EXTRA_OUTPUT,
-                    uri
-                )
-            } else {
-                intent.putExtra(
-                    MediaStore.EXTRA_OUTPUT,
-                    Uri.fromFile(cameraFile)
-                )
-            }
-
+            intent.putExtra(
+                MediaStore.EXTRA_OUTPUT,
+                FileExt.getFileUri(cameraFile)
+            )
             takePhotoFunc = res
             act.startActivityForResult(intent, takePhotoTag)
 
@@ -578,7 +546,7 @@ object Pic {
             intent.putExtra("outputY", outY)
             intent.putExtra("return-json", false)
             intent.putExtra("noFaceDetection", true) // no face detection
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cropFile))
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, FileExt.getFileUri(cropFile))
             intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString())
             // 新参数
 
@@ -612,7 +580,7 @@ object Pic {
             intent.putExtra("outputY", outY)
             intent.putExtra("return-json", false)
             intent.putExtra("noFaceDetection", true) // no face detection
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cropFile))
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, FileExt.getFileUri(cropFile))
             intent.putExtra("outputFormat", Bitmap.CompressFormat.PNG.toString())
             // 新参数
 

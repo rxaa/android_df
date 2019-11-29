@@ -15,12 +15,12 @@ class BmpBuffer(
     /**
      * 自定义图片读取函数
      */
-    customReadBitmap: ((menu: String) -> Bitmap?)? = null
+    customReadBitmap: ((menu: String, size: Int) -> Bitmap?)? = null
 ) {
 
-    var readBitmapFunc = fun(menu: String): Bitmap? {
+    var readBitmapFunc = fun(menu: String, size: Int): Bitmap? {
         // 未命中
-        var bmpBuffer = Pic.readBigBitmap(menu);
+        var bmpBuffer = Pic.readBigBitmap(menu, size);
 
 //        //旋转
         val degree = Pic.readPictureDegree(menu)
@@ -48,8 +48,14 @@ class BmpBuffer(
         imgBuffer.clear()
     }
 
-    inline fun get(url: String, cache: Boolean = true, res: (Bitmap) -> Unit): Boolean {
-        val bmp = readBitmap(url, cache);
+    inline fun get(
+        url: String, cache: Boolean = true,
+        showBigPic: Boolean = false,
+        size: Int = 0,
+        res: (Bitmap) -> Unit
+    ): Boolean {
+
+        val bmp = readBitmap(url, cache, showBigPic, size);
         if (bmp != null) {
             res(bmp)
             return (true)
@@ -57,13 +63,14 @@ class BmpBuffer(
         return (false)
     }
 
-    fun setImage(url: File, img: ImageView, cache: Boolean = true) {
-        setImage(url.toString(), img, cache);
+    fun setImage(url: File, img: ImageView, cache: Boolean = true, showBigPic: Boolean = false) {
+        setImage(url.toString(), img, cache, showBigPic);
     }
 
     fun setImage(url: File, img: ImageView, maxWidth: Float, cache: Boolean = true) {
-        get(url.toString(), cache) {
-            var w = df.dp2px(maxWidth)
+        var w = df.dp2px(maxWidth)
+        get(url.toString(), cache, false, w) {
+
             if (it.width < w)
                 w = it.width
             val lay = img.layoutParams
@@ -74,8 +81,8 @@ class BmpBuffer(
         }
     }
 
-    fun setImage(url: String, img: ImageView, cache: Boolean = true) {
-        get(url, cache) {
+    fun setImage(url: String, img: ImageView, cache: Boolean = true, showBigPic: Boolean = false) {
+        get(url, cache, showBigPic) {
             //        //旋转
 //            val degree = Pic.readPictureDegree(url)
 //            if (degree > 0) {
@@ -93,6 +100,17 @@ class BmpBuffer(
         }
     }
 
+    fun readBigPic(menu: String): Bitmap? {
+        // 未命中
+        var bmpBuffer = Pic.readOriBitmap(menu);
+//        //旋转
+        val degree = Pic.readPictureDegree(menu)
+        if (degree > 0) {
+            bmpBuffer = Pic.rotaingImageView(degree, bmpBuffer)
+        }
+        return bmpBuffer;
+    }
+
 
     /**
      * 读取并处理图片
@@ -106,7 +124,7 @@ class BmpBuffer(
      * *
      * @return
      */
-    fun readBitmap(menu: String, buffer: Boolean): Bitmap? {
+    fun readBitmap(menu: String, buffer: Boolean, showBigPic: Boolean = false, size: Int): Bitmap? {
 
         var bmpBuffer = imgBuffer[menu]
         if (bmpBuffer != null) {
@@ -114,7 +132,10 @@ class BmpBuffer(
         }
 
         // 未命中
-        bmpBuffer = readBitmapFunc(menu);
+        bmpBuffer = if (showBigPic)
+            readBigPic(menu);
+        else
+            readBitmapFunc(menu, size);
 
         if (buffer && bmpBuffer != null) {
             if (imgBuffer.size > bufferCount)

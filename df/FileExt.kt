@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.net.Uri
+import android.os.Build
+import androidx.core.content.FileProvider
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
@@ -42,8 +44,6 @@ object FileExt {
         arrayOf(".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
         arrayOf(".exe", "application/octet-stream"),
         arrayOf(".gif", "image/gif"),
-        arrayOf(".gtar", "application/x-gtar"),
-        arrayOf(".gz", "application/x-gzip"),
         arrayOf(".h", "text/plain"),
         arrayOf(".htm", "text/html"),
         arrayOf(".html", "text/html"),
@@ -81,16 +81,15 @@ object FileExt {
         arrayOf(".rmvb", "audio/x-pn-realaudio"),
         arrayOf(".rtf", "application/rtf"),
         arrayOf(".sh", "text/plain"),
-        arrayOf(".tar", "application/x-tar"),
-        arrayOf(".tgz", "application/x-compressed"),
+        arrayOf(".tar", "application/tar"),
+        arrayOf(".tgz", "application/tgz"),
         arrayOf(".txt", "text/plain"),
         arrayOf(".wav", "audio/x-wav"),
         arrayOf(".wma", "audio/x-ms-wma"),
         arrayOf(".wmv", "audio/x-ms-wmv"),
         arrayOf(".wps", "application/vnd.ms-works"),
         arrayOf(".xml", "text/plain"),
-        arrayOf(".z", "application/x-compress"),
-        arrayOf(".zip", "application/x-zip-compressed"),
+        arrayOf(".zip", "application/zip"),
         arrayOf("", "*/*")
     )
 
@@ -119,6 +118,19 @@ object FileExt {
         return type
     }
 
+    fun getFileUri(file:File): Uri? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            //7.0获取存储文件的uri
+            return FileProvider.getUriForFile(
+                df.appContext!!,
+                df.appContext!!.packageName + ".fileprovider",
+                file
+            );
+        } else {
+            return Uri.fromFile(file)
+        }
+    }
+
     /**
      * 打开文件
 
@@ -133,7 +145,9 @@ object FileExt {
             //获取文件file的MIME类型
             val type = getMIMEType(file)
             //设置intent的data和Type属性。
-            intent.setDataAndType(/*uri*/Uri.fromFile(file), type)
+            intent.setDataAndType(getFileUri(file), type)
+            //赋予临时权限
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             //跳转
             cont.startActivity(intent) //这里最好try一下，有可能会报错。 //比如说你的MIME类型是打开邮箱，但是你手机里面没装邮箱客户端，就会报错。
             return true

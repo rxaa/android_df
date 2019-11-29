@@ -721,9 +721,14 @@ object df {
         return ret
     }
 
+
     @JvmStatic
     fun getID(): Long {
         return System.currentTimeMillis().shl(16).plus((Math.random() * 65535).toLong())
+    }
+
+    fun getUniqueId(): String {
+        return System.currentTimeMillis().toString(36) + getRandStr(5)
     }
 
     /**
@@ -826,7 +831,7 @@ object df {
     }
 
     inline fun retry(time: Int, function: () -> Unit) {
-        for(i in 0 until time){
+        for (i in 0 until time) {
             try {
                 function();
                 break;

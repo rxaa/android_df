@@ -33,7 +33,7 @@ public class Bmp {
         if (sentBitmap == null)
             return null;
 
-        
+
         if (VERSION.SDK_INT > 16) {
             return blurSys(df.getAppContext(), sentBitmap, radius);
         }
@@ -57,7 +57,7 @@ public class Bmp {
 
         try {
             Bitmap bitmap = null;
-            bitmap = Pic.readBitmap(imagePath, width, Bitmap.Config.ARGB_8888);
+            bitmap = Pic.readBigBitmap(imagePath, Pic.getMinVal(width, height));
             if (bitmap == null)
                 return null;
 
@@ -82,7 +82,7 @@ public class Bmp {
 
         try {
             Bitmap bitmap = null;
-            bitmap = Pic.readBitmap(imagePath, Bitmap.Config.ARGB_8888);
+            bitmap =  Pic.readBigBitmap(imagePath);
             if (bitmap == null)
                 return null;
 
@@ -487,7 +487,7 @@ public class Bmp {
         try {
             Bitmap bitmap = null;
 
-            bitmap = Pic.readBitmap(imagePath, width, Bitmap.Config.ARGB_8888);
+            bitmap =  Pic.readBigBitmap(imagePath, Pic.getMinVal(width, height));
             if (bitmap == null)
                 return null;
 
