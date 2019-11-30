@@ -6,6 +6,8 @@ import java.io.File
 import java.util.*
 
 
+
+
 class BmpBuffer(
     /**
      * 图片内存缓存个数
@@ -69,6 +71,7 @@ class BmpBuffer(
 
     fun setImage(url: File, img: ImageView, maxWidth: Float, cache: Boolean = true) {
         var w = df.dp2px(maxWidth)
+
         get(url.toString(), cache, false, w) {
 
             if (it.width < w)

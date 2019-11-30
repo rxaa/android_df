@@ -6,6 +6,8 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.media.ExifInterface
@@ -13,14 +15,66 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.*
+import kotlin.collections.HashMap
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 object Pic {
 
+    val animDrawableBuf = HashMap<String, ArrayList<Drawable>>()
+
+    /**
+     * 新建360度旋转动画
+     */
+    fun new360AnimationDrawable(id: Int, count: Int): AnimationDrawable? {
+        val key = "" + id + "_" + count;
+        val arr = animDrawableBuf.get(key) ?: ArrayList<Drawable>()
+
+
+        if (arr.size < count) {
+            val loadPic = (ContextCompat.getDrawable(
+                df.appContext!!,
+                id
+            ) as BitmapDrawable).bitmap
+
+            for (i in 0..count) {
+                arr.add(getRotateDrawable(loadPic, (i * (360.0 / count)).toFloat()))
+            }
+
+            animDrawableBuf.set(key, arr)
+        }
+
+        val anim = AnimationDrawable()
+
+        arr.forEach {
+            anim.addFrame(it, 25)
+        }
+        anim.start()
+        return anim
+    }
+
+    fun rotatDrawable(drawable: Drawable, angle: Float): Drawable {
+        //创建一个Matrix对象
+        val matrix = Matrix()
+        //由darwable创建一个bitmap对象
+        var bitmap = (drawable as BitmapDrawable).bitmap
+        //设置旋转角度
+        matrix.setRotate(angle, (bitmap.width / 2).toFloat(), (bitmap.height / 2).toFloat())
+        //以bitmap跟matrix一起创建一个新的旋转以后的bitmap
+        bitmap = Bitmap.createBitmap(
+            bitmap, 0, 0,
+            bitmap.width,
+            bitmap.height,
+            matrix, true
+        )
+        //bitmap转化为drawable对象
+        return BitmapDrawable(df.appContext!!.resources, bitmap)
+    }
 
     fun getRotateDrawable(b: Bitmap, angle: Float): Drawable {
         val drawable = object : BitmapDrawable(df.appContext!!.resources, b) {
