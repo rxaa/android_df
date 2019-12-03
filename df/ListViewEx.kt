@@ -15,7 +15,7 @@ import java.util.*
  * 关联List<>数据, 并自动填充数据至ListView或LinearView或RecyclerView里
  * 使得调用者无需关心ListView或LinearView或RecyclerView之间的差异
  */
-class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
+open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
 
     /**
      * 关联的List数据

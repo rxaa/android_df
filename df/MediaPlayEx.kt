@@ -2,6 +2,7 @@ package rxaa.df
 
 import android.media.MediaPlayer
 import android.net.Uri
+import java.io.File
 
 class MediaPlayEx {
 
@@ -43,6 +44,7 @@ class MediaPlayEx {
         replay("android.resource://" + df.appContext!!.packageName + "/"
                 + resourseID, true)
     }
+
 
     /**
      * 设置是否循环播放
@@ -236,5 +238,18 @@ class MediaPlayEx {
         fun formatTime(time: Long): String {
             return String.format("%02d", time / 1000 / 60) + ":" + String.format("%02d", time / 1000 % 60)
         }
+
+        fun getVoiceLength(file: File): Int {
+            try {
+                val player = MediaPlayer.create(df.appContext, Uri.fromFile(file)) ?: return 0
+                val duration = player.duration
+                player.release();
+                return duration
+            } catch(e: Exception) {
+                df.logException(e, false);
+            }
+            return 0
+        }
+
     }
 }
