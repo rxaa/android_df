@@ -72,16 +72,13 @@ object Pack {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val install = Intent(Intent.ACTION_VIEW)
             install.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            //7.0获取存储文件的uri
-            val uri = FileProvider.getUriForFile(
-                cont!!,
-                df.appContext!!.packageName + ".fileprovider",
-                app
-            );
             //赋予临时权限
             install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             //设置dataAndType
-            install.setDataAndType(uri, "application/vnd.android.package-archive");
+            install.setDataAndType(
+                FileExt.getFileUri(app),
+                "application/vnd.android.package-archive"
+            );
             cont?.startActivity(install)
         } else {
             //创建URI
