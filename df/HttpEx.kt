@@ -32,6 +32,13 @@ class MultipartForm(val con: HttpURLConnection, val FixedLength: Boolean = true)
     internal fun setSendBufSize() {
         try {
             //https delegate
+            if(con is HttpsURLConnection){
+                con.setDoOutput(true);
+                con.setChunkedStreamingMode(0);
+                return
+            }
+
+
             val heF = con.javaClass.getDeclaredField("httpEngine")
             if (heF != null) {
                 heF.isAccessible = true;
