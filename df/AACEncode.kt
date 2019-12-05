@@ -4,12 +4,12 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.MediaFormat.MIMETYPE_AUDIO_AAC
-
+import android.os.Build
 
 class AACEncode(
-    val SAMPLE_RATE: Int = 22050,
-    val BIT_RATE: Int = 96000,
-    val channelCount: Int = 1
+        val SAMPLE_RATE: Int = 22050,
+        val BIT_RATE: Int = 96000,
+        val channelCount: Int = 1
 ) {
 
     @Volatile
@@ -35,7 +35,7 @@ class AACEncode(
         }
     }
 
-    fun end(){
+    fun end() {
 
     }
 
@@ -43,17 +43,30 @@ class AACEncode(
         mMediaCodec.notNull { codec ->
             val inputBufferIndex = codec.dequeueInputBuffer(-1)
             if (inputBufferIndex >= 0) {
-                val inputBuffer = codec.getInputBuffer(inputBufferIndex)
+
+                val inputBuffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    codec.getInputBuffer(inputBufferIndex)
+                } else {
+                    val inputBuffers = codec.getInputBuffers();
+                    inputBuffers[inputBufferIndex]
+                }
                 inputBuffer.clear()
                 inputBuffer.put(bytes_pkg)
                 inputBuffer.limit(bytes_pkg.size)
+
                 codec.queueInputBuffer(inputBufferIndex, 0, size, 0, 0)
             }
 
             val bufferInfo = MediaCodec.BufferInfo()
             var outputBufferIndex = codec.dequeueOutputBuffer(bufferInfo, 0)
             while (outputBufferIndex >= 0) {
-                val outputBuffer = codec.getOutputBuffer(outputBufferIndex)
+                val outputBuffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    codec.getOutputBuffer(outputBufferIndex)
+                } else {
+                    val outputBuffer = codec.getOutputBuffers();
+                    outputBuffer[outputBufferIndex]
+                }
+
                 outputBuffer.position(bufferInfo.offset)
                 outputBuffer.limit(bufferInfo.offset + bufferInfo.size)
                 val chunkAudio = ByteArray(bufferInfo.size + 7)// 7 is ADTS size
@@ -72,19 +85,19 @@ class AACEncode(
 
     companion object {
         val freqMap = mapOf(
-            Pair(96000, 0),
-            Pair(88200, 1),
-            Pair(64000, 2),
-            Pair(48000, 3),
-            Pair(44100, 4),
-            Pair(32000, 5),
-            Pair(24000, 6),
-            Pair(22050, 7),
-            Pair(16000, 8),
-            Pair(12000, 9),
-            Pair(11025, 10),
-            Pair(8000, 11),
-            Pair(7350, 12)
+                Pair(96000, 0),
+                Pair(88200, 1),
+                Pair(64000, 2),
+                Pair(48000, 3),
+                Pair(44100, 4),
+                Pair(32000, 5),
+                Pair(24000, 6),
+                Pair(22050, 7),
+                Pair(16000, 8),
+                Pair(12000, 9),
+                Pair(11025, 10),
+                Pair(8000, 11),
+                Pair(7350, 12)
         )
     }
 
