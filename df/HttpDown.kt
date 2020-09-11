@@ -38,7 +38,7 @@ open class HttpDown {
         return "/" + url.hashCode() + url.replace("/", "")
     }
 
-    protected var prog: (transferSize: Long, fileSize: Long) -> Unit = { t, f -> };
+    protected var prog: (transferSize: Long, fileSize: Long) -> Unit = { _, _ -> };
     open fun progress(func: (transferSize: Long, fileSize: Long) -> Unit): HttpDown {
         prog = func;
         return this

@@ -109,7 +109,7 @@ object Pack {
         get() {
             df.catchLog {
                 val info = df.appContext?.packageManager?.getPackageInfo(
-                    df.appContext?.packageName, 0
+                    df.appContext?.packageName!!, 0
                 )
                 return info?.versionCode ?: 0;
             }
@@ -135,7 +135,7 @@ object Pack {
         get() {
             df.catchLog {
                 val info = df.appContext?.packageManager?.getPackageInfo(
-                    df.appContext?.packageName, 0
+                    df.appContext?.packageName!!, 0
                 )
                 return info?.versionName ?: "";
             }

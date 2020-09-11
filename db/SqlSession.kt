@@ -274,7 +274,7 @@ class SqlSession<T : Any>(
 
     private fun initInto(obj: T, prefix: String = "insert", ignoreAutoInc: Boolean = true) {
         sqlStr.append(prefix + " into ${tableName} (${tableData.fieldsStr}) values(")
-        for (f in tableData!!.fields) {
+        for (f in tableData.fields) {
             val v = getFieldString(f, obj)
 
 
@@ -392,8 +392,8 @@ class SqlSession<T : Any>(
         }
         sqlStr.setLength(sqlStr.length - 1)
         sqlStr.append(
-            " where " + tableData!!.getPrimaryKey() + "='"
-                    + tableData!!.getPrimaryKeyVal(obj) + "'"
+            " where " + tableData.getPrimaryKey() + "='"
+                    + tableData.getPrimaryKeyVal(obj) + "'"
         )
 
         connect.update(sqlStr.toString())
@@ -411,9 +411,9 @@ class SqlSession<T : Any>(
 
         sqlStr.append("update ${tableName} set ")
 
-        val op = SqlUpdateOp(tableData!!.classInst, this)
+        val op = SqlUpdateOp(tableData.classInst, this)
 
-        op.func(tableData!!.classInst)
+        op.func(tableData.classInst)
 
         sqlStr.setLength(sqlStr.length - 1)
 
@@ -452,8 +452,8 @@ class SqlSession<T : Any>(
 
     fun order(func: SqlOrderOp<T>.(res: T) -> Unit): SqlSession<T> {
         order = " order by "
-        val op = SqlOrderOp(tableData!!.classInst, this)
-        op.func(tableData!!.classInst)
+        val op = SqlOrderOp(tableData.classInst, this)
+        op.func(tableData.classInst)
         order = order.substring(0, order.length - 1)
         return this;
     }
@@ -463,17 +463,17 @@ class SqlSession<T : Any>(
     }
 
     fun and(func: SqlOp<T>.(res: T) -> Unit): SqlSession<T> {
-        val op = SqlOp(tableData!!.classInst, this)
+        val op = SqlOp(tableData.classInst, this)
         where += " and ("
-        op.func(tableData!!.classInst)
+        op.func(tableData.classInst)
         where += ") "
         return this
     }
 
     fun or(func: SqlOp<T>.(res: T) -> Unit): SqlSession<T> {
-        val op = SqlOp(tableData!!.classInst, this)
+        val op = SqlOp(tableData.classInst, this)
         where += "  or ("
-        op.func(tableData!!.classInst)
+        op.func(tableData.classInst)
         where += ") "
         return this
     }
@@ -563,7 +563,7 @@ class SqlSession<T : Any>(
         var ex: Exception? = null;
         for (i in 0..cursor.getColumnCount() - 1) {
             try {
-                val fi = tableData!!.fields[i]
+                val fi = tableData.fields[i]
 
                 when (fi.type) {
                     String::class.java -> {

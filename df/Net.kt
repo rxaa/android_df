@@ -31,7 +31,9 @@ object Net {
             }
         } else {
             for (net in netMana.allNetworks) {
-                func(netMana.getNetworkInfo(net))
+                val n = netMana.getNetworkInfo(net);
+                if (n != null)
+                    func(n);
             }
         }
 

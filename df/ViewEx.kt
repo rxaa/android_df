@@ -38,6 +38,7 @@ open class ViewEx(private val cont: Context) {
     }
 
     var renderList: HashMap<View, () -> Unit>? = null;
+
     /**
      * 触发单个View的渲染函数
      */
@@ -138,7 +139,7 @@ open class ViewEx(private val cont: Context) {
      */
     fun dialogMatchParent() {
         _rootDialog.notNull { alert ->
-            val dialogWin = alert.getWindow();
+            val dialogWin = alert.window ?: return;
             val lp = dialogWin.attributes;
             lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
             lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -162,7 +163,9 @@ open class ViewEx(private val cont: Context) {
             _rootDialog = android.app.Dialog(getContext(), dialogStyle)
         else
             _rootDialog = android.app.Dialog(getContext())
-        _rootDialog!!.setContentView(_rootView)
+        _rootView.notNull {
+            _rootDialog!!.setContentView(it)
+        }
         _rootDialog!!.setCanceledOnTouchOutside(cancelAble)
 
         _rootDialog!!.setOnDismissListener {

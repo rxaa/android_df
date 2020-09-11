@@ -77,6 +77,7 @@ open class ActivityEx : Activity() {
     val bindList = ArrayList<() -> Unit>();
 
     val createList = ArrayList<() -> Unit>();
+
     /**
      * 在setContentView之后调用,绑定view对象
      */
@@ -115,7 +116,11 @@ open class ActivityEx : Activity() {
     }
 
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         onActivityRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
@@ -226,9 +231,12 @@ open class ActivityEx : Activity() {
         val allowKilledStr = "allow_killed_0ikj374h";
 
 
-        fun getPath(activity: Activity, uri: Uri): String {
-            if (uri.authority.length == 0)
-                return uri.path
+        fun getPath(activity: Activity, uri: Uri?): String {
+            if (uri == null) {
+                return "";
+            }
+            if (uri.authority?.length == 0)
+                return uri.path ?: ""
             val projection = arrayOf(MediaStore.Images.Media.DATA)
             val cursor = activity.managedQuery(uri, projection, null, null, null)
             val column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
@@ -318,7 +326,10 @@ open class ActivityEx : Activity() {
          * 新建Intent并传参,func回调函数在setContentView之前调用,不要在此访问界面View
          */
         @JvmStatic
-        inline fun <reified T : Activity> newIntent(cont: Context?, crossinline func: (T) -> Unit): Intent {
+        inline fun <reified T : Activity> newIntent(
+            cont: Context?,
+            crossinline func: (T) -> Unit
+        ): Intent {
             val inte = Intent(cont, T::class.java)
             addIntentPara(inte) { act ->
                 func(act as T)

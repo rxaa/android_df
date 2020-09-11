@@ -7,9 +7,9 @@ import android.media.MediaFormat.MIMETYPE_AUDIO_AAC
 import android.os.Build
 
 class AACEncode(
-        val SAMPLE_RATE: Int = 22050,
-        val BIT_RATE: Int = 96000,
-        val channelCount: Int = 1
+    val SAMPLE_RATE: Int = 22050,
+    val BIT_RATE: Int = 96000,
+    val channelCount: Int = 1
 ) {
 
     @Volatile
@@ -50,9 +50,11 @@ class AACEncode(
                     val inputBuffers = codec.getInputBuffers();
                     inputBuffers[inputBufferIndex]
                 }
-                inputBuffer.clear()
-                inputBuffer.put(bytes_pkg)
-                inputBuffer.limit(bytes_pkg.size)
+                if (inputBuffer != null) {
+                    inputBuffer.clear()
+                    inputBuffer.put(bytes_pkg)
+                    inputBuffer.limit(bytes_pkg.size)
+                }
 
                 codec.queueInputBuffer(inputBufferIndex, 0, size, 0, 0)
             }
@@ -67,14 +69,16 @@ class AACEncode(
                     outputBuffer[outputBufferIndex]
                 }
 
-                outputBuffer.position(bufferInfo.offset)
-                outputBuffer.limit(bufferInfo.offset + bufferInfo.size)
-                val chunkAudio = ByteArray(bufferInfo.size + 7)// 7 is ADTS size
-                addADTStoPacket(chunkAudio, chunkAudio.size)
-                outputBuffer.get(chunkAudio, 7, bufferInfo.size)
-                outputBuffer.position(bufferInfo.offset)
+                if (outputBuffer != null) {
+                    outputBuffer.position(bufferInfo.offset)
+                    outputBuffer.limit(bufferInfo.offset + bufferInfo.size)
+                    val chunkAudio = ByteArray(bufferInfo.size + 7)// 7 is ADTS size
+                    addADTStoPacket(chunkAudio, chunkAudio.size)
+                    outputBuffer.get(chunkAudio, 7, bufferInfo.size)
+                    outputBuffer.position(bufferInfo.offset)
 
-                onBuffer(chunkAudio, chunkAudio.size)
+                    onBuffer(chunkAudio, chunkAudio.size)
+                }
 
                 codec.releaseOutputBuffer(outputBufferIndex, false)
                 outputBufferIndex = codec.dequeueOutputBuffer(bufferInfo, 0)
@@ -85,19 +89,19 @@ class AACEncode(
 
     companion object {
         val freqMap = mapOf(
-                Pair(96000, 0),
-                Pair(88200, 1),
-                Pair(64000, 2),
-                Pair(48000, 3),
-                Pair(44100, 4),
-                Pair(32000, 5),
-                Pair(24000, 6),
-                Pair(22050, 7),
-                Pair(16000, 8),
-                Pair(12000, 9),
-                Pair(11025, 10),
-                Pair(8000, 11),
-                Pair(7350, 12)
+            Pair(96000, 0),
+            Pair(88200, 1),
+            Pair(64000, 2),
+            Pair(48000, 3),
+            Pair(44100, 4),
+            Pair(32000, 5),
+            Pair(24000, 6),
+            Pair(22050, 7),
+            Pair(16000, 8),
+            Pair(12000, 9),
+            Pair(11025, 10),
+            Pair(8000, 11),
+            Pair(7350, 12)
         )
     }
 

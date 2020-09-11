@@ -68,7 +68,7 @@ class MediaPlayEx {
         try {
             media.reset()
             if (url.contains("android.resource")) {
-                media.setDataSource(df.appContext, Uri.parse(url))
+                media.setDataSource(df.appContext!!, Uri.parse(url))
             } else {
                 media.setDataSource(url)
             }

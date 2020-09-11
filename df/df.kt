@@ -37,11 +37,13 @@ object df {
      */
     @JvmStatic
     var appContext: Context? = null;
+
     /**
      * 当前顶层activity
      */
     @JvmStatic
     var currentActivity: Activity? = null;
+
     /**
      * 屏幕密度
      */
@@ -69,10 +71,9 @@ object df {
         app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
 
             override fun onActivityStopped(activity: Activity) {}
+            override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {}
 
             override fun onActivityStarted(activity: Activity) {}
-
-            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle?) {}
 
             override fun onActivityResumed(activity: Activity) {}
 
@@ -249,7 +250,8 @@ object df {
      */
     @JvmStatic
     fun removeOnUi(func: Runnable?) {
-        handl.removeCallbacks(func);
+        if (func != null)
+            handl.removeCallbacks(func);
     }
 
 

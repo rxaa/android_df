@@ -161,7 +161,7 @@ fun <T : CompoundButton> T.onCheckedChanged(cb: (isChecked: Boolean) -> Unit): T
 fun Dialog?.setLocation(x: Int, y: Int, gravity: Int = Gravity.LEFT or Gravity.TOP) {
     if (this == null)
         return;
-    val dialogWindow = this.window
+    val dialogWindow = this.window ?: return;
     val lp = dialogWindow.attributes
     dialogWindow.setGravity(gravity)
     lp.x = x
