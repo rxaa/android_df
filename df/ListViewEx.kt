@@ -4,15 +4,18 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.view.get
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 /**
- * ListView辅助类
- * 关联List<>数据, 并自动填充数据至ListView或LinearView或RecyclerView里
+ * List辅助类
+ * 关联List<>数据, 自动配置Adapter, 并自动填充数据至ListView或LinearView或RecyclerView里
  * 使得调用者无需关心ListView或LinearView或RecyclerView之间的差异
  */
 open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
@@ -25,11 +28,14 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     /**
      * 同RecyclerView, 创建View回调
      */
-    var onCreateView: (viewType: Int) -> ViewEx = { type -> throw Exception("Unimplement onCreateView function") }
+    var onCreateView: (viewType: Int) -> ViewEx =
+        { type -> throw Exception("Unimplement onCreateView function") }
+
     /**
      * 同RecyclerView, 显示View item回调
      */
     var onBindView: (vi: ViewEx, position: Int) -> Unit = { vi: ViewEx, position: Int -> }
+
     /**
      * 同RecyclerView, 获取View类型回调
      */
@@ -48,6 +54,55 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     internal var recyAdapter: RecyAdapter? = null;
     internal var linearView: LinearLayout? = null
     internal var _recyclerView: RecyclerView? = null
+
+    /**
+     *  缓存item成员的动态view
+     */
+    internal var viewBuffer: HashMap<Class<*>, ArrayList<ViewEx>>? = null
+
+    val maxViewBuffer = 10;
+
+    fun getViewBuffer(clas: Class<*>): ViewEx? {
+        val list = viewBuffer?.get(clas);
+        if (list != null && list.size > 0) {
+            return list.removeLast();
+        }
+        return null;
+    }
+
+    fun addViewBuffer(vi: ViewGroup) {
+        for (i in 0 until vi.childCount) {
+            addViewBuffer(vi.get(i));
+        }
+
+    }
+
+    fun addViewBuffer(vi: View) {
+        val map = viewBuffer ?: HashMap();
+        if (viewBuffer == null) {
+            viewBuffer = map;
+        }
+        val vEx = ViewEx.getFromTag(vi);
+        vEx.notNull {
+            map.get(it.javaClass).notNull {
+                addViewBuffer(vi, it)
+            }.nope {
+                val list = ArrayList<ViewEx>();
+                map.put(it.javaClass, list);
+                addViewBuffer(vi, list)
+            }
+        }
+
+    }
+
+    fun addViewBuffer(vi: View, list: ArrayList<ViewEx>) {
+        val vEx = ViewEx.getFromTag(vi);
+        vEx.notNull {
+            if (list.size < maxViewBuffer) {
+                list.add(it);
+            }
+        }
+    }
 
 
     init {
@@ -89,6 +144,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
 
     internal val headViewType = -39583;
     internal val footViewType = -11583;
+
     /**
      * ListView head列表
      */
@@ -224,30 +280,32 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         listViewid.adapter = adapt
         mCont = cont
 
-        listViewid.onItemClickListener = AdapterView.OnItemClickListener { adapterView, view, i, l ->
-            try {
-                if (i >= 0 && i < data.size && onItemClick != null)
-                    onItemClick!!(i, view)
-            } catch (e: Throwable) {
-                // TODO Auto-generated catch block
-                df.logException(e, true)
-            }
-        }
-
-        listView!!.onItemLongClickListener = AdapterView.OnItemLongClickListener { arg0, arg1, arg2, arg3 ->
-            // TODO Auto-generated method stub
-            try {
-                if (arg2 >= 0 && arg2 < data.size
-                    && onItemLongClick != null
-                )
-                    return@OnItemLongClickListener onItemLongClick!!(arg2, arg1)
-            } catch (e: Throwable) {
-                // TODO Auto-generated catch block
-                df.logException(e, true)
+        listViewid.onItemClickListener =
+            AdapterView.OnItemClickListener { adapterView, view, i, l ->
+                try {
+                    if (i >= 0 && i < data.size && onItemClick != null)
+                        onItemClick!!(i, view)
+                } catch (e: Throwable) {
+                    // TODO Auto-generated catch block
+                    df.logException(e, true)
+                }
             }
 
-            false
-        }
+        listView!!.onItemLongClickListener =
+            AdapterView.OnItemLongClickListener { arg0, arg1, arg2, arg3 ->
+                // TODO Auto-generated method stub
+                try {
+                    if (arg2 >= 0 && arg2 < data.size
+                        && onItemLongClick != null
+                    )
+                        return@OnItemLongClickListener onItemLongClick!!(arg2, arg1)
+                } catch (e: Throwable) {
+                    // TODO Auto-generated catch block
+                    df.logException(e, true)
+                }
+
+                false
+            }
     }
 
 
@@ -278,22 +336,23 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
             }
         }
 
-        listView!!.onItemLongClickListener = AdapterView.OnItemLongClickListener { arg0, arg1, arg2, arg3 ->
-            var arg2 = arg2
-            // TODO Auto-generated method stub
-            try {
-                arg2 -= listViewid.headerViewsCount
-                if (arg2 >= 0 && arg2 < data.size
-                    && onItemLongClick != null
-                )
-                    return@OnItemLongClickListener onItemLongClick!!(arg2, arg1)
-            } catch (e: Throwable) {
-                // TODO Auto-generated catch block
-                df.logException(e, true)
-            }
+        listView!!.onItemLongClickListener =
+            AdapterView.OnItemLongClickListener { arg0, arg1, arg2, arg3 ->
+                var arg2 = arg2
+                // TODO Auto-generated method stub
+                try {
+                    arg2 -= listViewid.headerViewsCount
+                    if (arg2 >= 0 && arg2 < data.size
+                        && onItemLongClick != null
+                    )
+                        return@OnItemLongClickListener onItemLongClick!!(arg2, arg1)
+                } catch (e: Throwable) {
+                    // TODO Auto-generated catch block
+                    df.logException(e, true)
+                }
 
-            false
-        }
+                false
+            }
     }
 
     fun getContext(): Context? {
@@ -309,6 +368,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
                     onCreateView(type).apply {
                         viewType = type
                         setViewToTag()
+                        listEx = this@ListViewEx;
                     }
                 } else {
                     vi.tag as ViewEx
@@ -591,6 +651,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
         return onCreateView(wtype).apply {
             viewType = wtype;
             setViewToTag()
+            listEx = this@ListViewEx
         }
     }
 
@@ -603,6 +664,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
                     onCreateView!!(type).apply {
                         viewType = type;
                         setViewToTag()
+                        listEx = this@ListViewEx
                     }
                 } else {
                     getViewByType(arg1.tag as ViewEx, type)

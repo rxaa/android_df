@@ -8,10 +8,17 @@ import android.view.ViewGroup
 import java.util.*
 
 
+/**
+ * 公共基础子View
+ */
 open class ViewEx(private val cont: Context) {
 
     companion object {
+        private val viewTag = -29384;
 
+        fun getFromTag(vi: View): ViewEx? {
+            return vi.getTag(viewTag) as? ViewEx
+        }
     }
 
     var dialogStyle = 0;
@@ -19,6 +26,10 @@ open class ViewEx(private val cont: Context) {
     fun startActivity(inte: Intent) {
         cont.startActivity(inte)
     }
+
+    //该view所属的ListViewEx
+    var listEx: ListViewEx<*>? = null;
+
 
     internal var _rootView: View? = null;
     internal var _rootDialog: Dialog? = null;
@@ -64,6 +75,52 @@ open class ViewEx(private val cont: Context) {
         return this
     }
 
+
+    /**
+     * 清除指定的viewGroup,并加入缓存
+     */
+    fun clearView(view: ViewGroup) {
+        listEx.notNull {
+            it.addViewBuffer(view);
+            view.removeAllViews()
+        }.nope {
+            view.removeAllViews()
+        }
+    }
+
+
+    /**
+     * 向指定的ViewGroup添加ViewEx
+     * newViewFunc为ViewEx构造函数，只有当缓存中未找到该View时，才会重新创建
+     *
+     */
+    inline fun <reified T : ViewEx> addView(view: ViewGroup, noinline newViewFunc: () -> T): T {
+        return _addView(view, T::class.java, newViewFunc);
+    }
+
+
+    /**
+     * 向指定的ViewGroup添加View
+     */
+    fun <T : ViewEx> _addView(view: ViewGroup, clas: Class<T>, newViewFunc: () -> T): T {
+        listEx.notNull {
+
+            val bufferV = it.getViewBuffer(clas);
+
+            val v = if (bufferV != null)
+                bufferV as T
+            else
+                newViewFunc()
+
+            view.addView(v.getView());
+            return v;
+        }
+
+        val v = newViewFunc();
+        view.addView(v.getView());
+        return v;
+    }
+
     /**
      * 触发所有View的render函数
      */
@@ -93,22 +150,31 @@ open class ViewEx(private val cont: Context) {
         return _rootView!!.findViewById<T>(id) as T;
     }
 
+
     @JvmOverloads
     fun setContentView(layoutResID: Int, parent: ViewGroup? = null) {
         _rootView = df.createView(getContext(), parent, layoutResID)
+        _rootView!!.setTag(viewTag, this);
         bindList.forEach { it() }
     }
 
     fun setContentView(view: View?) {
         _rootView = view
+        _rootView!!.setTag(viewTag, this);
         bindList.forEach { it() }
     }
 
-    fun setContentView(view: View?, layoutResID: Int): View {
-        _rootView = view ?: df.createView(getContext(), layoutResID)
+    fun setContentView(view: View?, layoutResID: Int, parent: View? = null): View {
+        _rootView = view ?: if (parent != null && parent is ViewGroup) df.createView(
+            getContext(),
+            parent,
+            layoutResID
+        ) else df.createView(getContext(), layoutResID)
+        _rootView!!.setTag(viewTag, this);
         bindList.forEach { it() }
         return _rootView as View
     }
+
 
     val show: ViewEx
         get() {

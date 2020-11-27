@@ -6,8 +6,9 @@ import java.io.File
 import java.util.*
 
 
-
-
+/**
+ *  图片缓存
+ */
 class BmpBuffer(
     /**
      * 图片内存缓存个数

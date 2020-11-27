@@ -6,6 +6,9 @@ import android.media.MediaFormat
 import android.media.MediaFormat.MIMETYPE_AUDIO_AAC
 import android.os.Build
 
+/**
+ * aac音频编码
+ */
 class AACEncode(
     val SAMPLE_RATE: Int = 22050,
     val BIT_RATE: Int = 96000,

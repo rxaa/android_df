@@ -30,7 +30,9 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
             else if (viewType <= list.footViewType)
                 return RecyItemHolder(list.footViewList[list.footViewType - viewType])
         }
-        return RecyItemHolder(list.onCreateView!!(viewType))
+        val v = list.onCreateView!!(viewType)
+        v.listEx = list
+        return RecyItemHolder(v)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -38,7 +40,8 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
             if (list.headViewList.size > 0 && position < list.headViewList.size) {
                 return list.headViewType - position;
             } else if (list.footViewList.size > 0 && position >= list.data.size + list.headViewList.size) {
-                return list.footViewType - (position - list.data.size + list.headViewList.size);
+                val sub = (position - list.data.size - list.headViewList.size)
+                return list.footViewType - sub;
             }
 
             return list.getViewType(position - list.headViewList.size)
@@ -64,7 +67,10 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
 
 }
 
-class ItemDragCallback(val lve: ListViewEx<*>, val onMove: (fromPosition: Int, toPosition: Int) -> Unit) :
+class ItemDragCallback(
+    val lve: ListViewEx<*>,
+    val onMove: (fromPosition: Int, toPosition: Int) -> Unit
+) :
     ItemTouchHelper.Callback() {
 
 
@@ -88,7 +94,10 @@ class ItemDragCallback(val lve: ListViewEx<*>, val onMove: (fromPosition: Int, t
     /**
      * 拖拽初始化
      */
-    override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+    override fun getMovementFlags(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder
+    ): Int {
 
         val position = viewHolder.layoutPosition
         //headView 不用交换

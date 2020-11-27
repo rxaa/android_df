@@ -297,6 +297,21 @@ object Pic {
         return bmpFactoryOptions
     }
 
+    fun readBmpSize(id: Int): BitmapFactory.Options {
+        val bmpFactoryOptions = BitmapFactory.Options()
+        bmpFactoryOptions.inJustDecodeBounds = true
+        try {
+
+            BitmapFactory.decodeResource(df.appContext!!.resources, id, bmpFactoryOptions)
+            return bmpFactoryOptions
+
+        } catch (e: Throwable) {
+            // TODO Auto-generated catch block
+        }
+
+        return bmpFactoryOptions
+    }
+
     @JvmStatic
     fun getMinVal(v1: Int, v2: Int): Int {
         return if (v1 < v2) v1 else v2
@@ -329,6 +344,60 @@ object Pic {
                     else
                         options.inPreferredConfig = Bitmap.Config.ARGB_8888
                     val bmp = BitmapFactory.decodeFile(url, options)
+                    return bmp
+                } catch (e: OutOfMemoryError) {
+                    i *= 2
+                }
+
+            }
+        } catch (e: Throwable) {
+            // TODO Auto-generated catch block
+
+        }
+
+        return null
+    }
+
+    /**
+     *  读取大图，并适量压缩以减少内存占用
+     *  minSize： 图片压缩最小像素大小
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun readBigBitmap(resId: Int, minSize: Int = 0): Bitmap? {
+        try {
+            val type = readBmpSize(resId)
+            val w = getMinVal(type.outHeight, type.outWidth)
+
+            var sw = if (minSize > 0)
+                minSize
+            else {
+                getMinVal(displaySize)
+            }
+
+
+            var i = 1
+            while (i <= 1024) {
+                if (sw * i > w) {
+                    break
+                }
+                i *= 2
+            }
+
+            i /= 2
+            if (i <= 0)
+                i = 1;
+
+
+            for (outCount in 0..6) {
+                try {
+                    val options = BitmapFactory.Options()
+                    options.inSampleSize = i
+                    if (type.outMimeType.contains("jpeg"))
+                        options.inPreferredConfig = Bitmap.Config.RGB_565
+                    else
+                        options.inPreferredConfig = Bitmap.Config.ARGB_8888
+                    val bmp =  BitmapFactory.decodeResource(df.appContext!!.resources, resId, options)
                     return bmp
                 } catch (e: OutOfMemoryError) {
                     i *= 2
