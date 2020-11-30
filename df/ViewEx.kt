@@ -77,7 +77,7 @@ open class ViewEx(private val cont: Context) {
 
 
     /**
-     * 清除指定的viewGroup,并加入缓存
+     * 清除指定的viewGroup,并将其成员View加入缓存
      */
     fun clearView(view: ViewGroup) {
         listEx.notNull {

@@ -8,7 +8,6 @@ import androidx.core.view.get
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
@@ -18,7 +17,7 @@ import kotlin.collections.HashMap
  * 关联List<>数据, 自动配置Adapter, 并自动填充数据至ListView或LinearView或RecyclerView里
  * 使得调用者无需关心ListView或LinearView或RecyclerView之间的差异
  */
-open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
+open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView: ViewEx? = null) {
 
     /**
      * 关联的List数据
@@ -30,6 +29,14 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
      */
     var onCreateView: (viewType: Int) -> ViewEx =
         { type -> throw Exception("Unimplement onCreateView function") }
+
+
+    var defaultViewClass: Class<*>? = null;
+
+    inline fun <reified T : ViewEx> onCreate(noinline func: (viewType: Int) -> T) {
+        onCreateView = func;
+        defaultViewClass = T::class.java
+    }
 
     /**
      * 同RecyclerView, 显示View item回调
@@ -419,8 +426,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
 
         this.data.add(data)
         if (linearView != null) {
-            val v = showListItem(null, this.data.size - 1)
-            linearView!!.addView(v)
+            addLinearView(this.data.size - 1)
         }
     }
 
@@ -486,12 +492,25 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
 
         if (linearView != null) {
             for (i in data.indices) {
-                val v = showListItem(null, index + i)
-                linearView!!.addView(v, index + i)
+                addLinearView(index + i)
             }
         }
 
         update()
+    }
+
+
+    private fun addLinearView(i: Int) {
+        parentListBuffer { list, viewCls ->
+            val ve = list.getViewBuffer(viewCls)?.getView();
+            val v = showListItem(ve, i)
+            linearView!!.addView(v)
+            return
+        }
+
+        val v = showListItem(null, i)
+        linearView!!.addView(v, i)
+
     }
 
     /**
@@ -500,17 +519,33 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
     fun add(i: Int, data: ListT) {
         this.data.add(i, data)
         if (linearView != null) {
-            val v = showListItem(null, i)
-            linearView!!.addView(v, i)
+            addLinearView(i);
+
         }
         update()
     }
 
 
+    inline fun parentListBuffer(func: (list: ListViewEx<*>, viewCls: Class<*>) -> Unit) {
+        if (parentView != null) {
+            defaultViewClass.notNull { vc ->
+                parentView.listEx.notNull {
+                    func(it, vc);
+                }
+            }
+        }
+    }
+
+    /**
+     * 清空其数据
+     */
     fun clear() {
         data.clear()
-        if (linearView != null) {
-            linearView!!.removeAllViews()
+        linearView.notNull { linear ->
+            parentListBuffer { list, viewCls ->
+                list.addViewBuffer(linear);
+            }
+            linear.removeAllViews()
         }
         update()
     }
@@ -538,8 +573,9 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
      */
     fun del(i: Int) {
         data.removeAt(i)
-        if (linearView != null) {
-            linearView!!.removeViewAt(i)
+        linearView.notNull { linearView ->
+            parentListBuffer { list, viewCls -> list.addViewBuffer(linearView.get(i)) }
+            linearView.removeViewAt(i)
         }
         update()
     }
@@ -549,6 +585,22 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup) {
      */
     fun removeAt(i: Int) {
         del(i)
+    }
+
+    /**
+     * 移除指定范围内元素
+     */
+    fun removeRange(fromI: Int, toI: Int) {
+        for (i in toI downTo fromI) {
+            data.removeAt(i)
+            linearView.notNull { linearView ->
+                parentListBuffer { list, viewCls ->
+                    list.addViewBuffer(linearView.get(i))
+                }
+                linearView.removeViewAt(i)
+            }
+        }
+        update()
     }
 
     /**
