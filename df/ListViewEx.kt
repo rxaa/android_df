@@ -30,9 +30,9 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     var onCreateView: (viewType: Int) -> ViewEx =
         { type -> throw Exception("Unimplement onCreateView function") }
 
-
-    var defaultViewClass: Class<*>? = null;
-
+    /**
+     * 同RecyclerView, 创建View回调
+     */
     inline fun <reified T : ViewEx> onCreate(noinline func: (viewType: Int) -> T) {
         onCreateView = func;
         defaultViewClass = T::class.java
@@ -55,6 +55,8 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     var onItemClick: ((index: Int, vi: View) -> Unit)? = null
     var onItemLongClick: ((index: Int, vi: View) -> Boolean)? = null
 
+
+    var defaultViewClass: Class<*>? = null;
     internal var listView: AbsListView? = null
     internal var mCont: android.content.Context? = null
     internal var adapt: LiAdapter? = null
