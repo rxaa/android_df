@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
 import java.util.*
 
 
@@ -19,6 +21,15 @@ open class ViewEx(private val cont: Context) {
         fun getFromTag(vi: View): ViewEx? {
             return vi.getTag(viewTag) as? ViewEx
         }
+    }
+
+    fun <T : ViewDataBinding> dataBinding(view: View?, resId: Int): T {
+        return DataBindingUtil.bind<T>(
+            setContentView(
+                view,
+                resId
+            )
+        )!!
     }
 
     var dialogStyle = 0;
@@ -65,7 +76,7 @@ open class ViewEx(private val cont: Context) {
     /**
      * view scroll回调
      */
-    open fun onScroll(){
+    open fun onScroll() {
 
     }
 

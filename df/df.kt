@@ -650,10 +650,6 @@ object df {
         return aLastName.toLowerCase()
     }
 
-    @JvmStatic
-    fun isEmpty(str: String?): Boolean {
-        return str == null || str == ""
-    }
 
     /// <summary>
     /// get an unrepeat file name

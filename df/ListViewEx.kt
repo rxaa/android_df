@@ -166,7 +166,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
 
     fun addFooter(view: ViewEx): ListViewEx<ListT> {
         isListView {
-            it.addHeaderView(view.getView())
+            it.addFooterView(view.getView())
         }
 
         _recyclerView.notNull {

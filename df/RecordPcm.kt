@@ -94,7 +94,7 @@ class RecordPcm(
                             val fos = FileOutputStream(outFile)
                             fOut = fos
                             aac.onBuffer = { buffer: ByteArray, size: Int ->
-                                Log.e("wwwww", "encodeSize" + size)
+                                //Log.e("wwwww", "encodeSize" + size)
                                 fos.write(buffer, 0, size);
                                 onEncodeAAC(buffer, size)
                             }
