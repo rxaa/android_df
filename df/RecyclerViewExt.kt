@@ -128,7 +128,7 @@ class RecybindAdapter(val recyvler: RecyclerView) : RecyclerView.Adapter<RecyIte
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyItemHolder {
-        df.catchLog {
+        FileExt.catchLog {
             val dat = list[viewType];
             if (dat.view != null)
                 return RecyItemHolder(dat.view)
@@ -139,7 +139,7 @@ class RecybindAdapter(val recyvler: RecyclerView) : RecyclerView.Adapter<RecyIte
     }
 
     override fun getItemViewType(position: Int): Int {
-        df.catchLog {
+        FileExt.catchLog {
             findDat(position) { dat, i, size ->
                 return i;
             }
@@ -148,7 +148,7 @@ class RecybindAdapter(val recyvler: RecyclerView) : RecyclerView.Adapter<RecyIte
     }
 
     override fun onBindViewHolder(holder: RecyItemHolder, position: Int) {
-        df.catchLog {
+        FileExt.catchLog {
             findDat(position) { dat, i, size ->
                 val index = position - size;
                 if (dat.list != null) {
@@ -239,7 +239,7 @@ class BindItemDragCallback(val recy: RecybindAdapter) :
                     recy.notifyItemMoved(fromPosition, toPosition);
                     dat.onMove!!(datFrom, datTo);
                 } catch (e: Exception) {
-                    df.logException(e)
+                    FileExt.logException(e)
                     return false
                 }
             }

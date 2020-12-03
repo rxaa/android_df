@@ -472,7 +472,7 @@ public class Bmp {
 
         } catch (Throwable e) {
             // TODO: handle exception
-            df.logException(e, true, "");
+            FileExt.logException(e, true, "");
         }
         return null;
     }

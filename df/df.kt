@@ -59,7 +59,7 @@ object df {
      */
     fun launch(block: suspend () -> Unit) {
         GlobalScope.launch(Dispatchers.Unconfined) {
-            catchLog {
+            FileExt.catchLog {
                 block();
             }
         }
@@ -133,7 +133,7 @@ object df {
     fun uncaughtExceptionLog(msg: Boolean = true) {
         Thread.setDefaultUncaughtExceptionHandler({ thread, throwable ->
 
-            df.logException(throwable, msg)
+            FileExt.logException(throwable, msg)
 
             val lo = Looper.myLooper()
             //// 处于主线程中,只能干掉当前的程序
@@ -190,7 +190,7 @@ object df {
      */
     suspend fun runToPool(pool: ExecutorService) = suspendCoroutine<Unit> { conti ->
         pool.execute({
-            df.catchLog {
+            FileExt.catchLog {
                 conti.resume(Unit)
             }
         })
@@ -202,7 +202,7 @@ object df {
     @JvmStatic
     fun runOnUi(func: () -> Unit): Runnable {
         val run = Runnable {
-            df.catchLog { func() }
+            FileExt.catchLog { func() }
         }
         handl.post(run)
         return run;
@@ -211,7 +211,7 @@ object df {
     @JvmStatic
     fun runOnUiCheck(func: () -> Unit): Runnable {
         val run = Runnable {
-            df.catchLog { func() }
+            FileExt.catchLog { func() }
         }
 
         val lo = Looper.myLooper()
@@ -227,7 +227,7 @@ object df {
 
     suspend fun delay(time: Long) = suspendCoroutine<Unit> {
         val run = Runnable {
-            df.catchLog { it.resume(Unit) }
+            FileExt.catchLog { it.resume(Unit) }
         }
         handl.postDelayed(run, time);
     }
@@ -239,7 +239,7 @@ object df {
     @JvmStatic
     fun runOnUi(time: Long, func: () -> Unit): Runnable {
         val run = Runnable {
-            df.catchLog { func() }
+            FileExt.catchLog { func() }
         }
         handl.postDelayed(run, time);
         return run;
@@ -255,27 +255,6 @@ object df {
     }
 
 
-    /**
-     * 捕获所有异常加入日志,并弹窗
-     */
-    @JvmStatic
-    inline fun catchLog(func: () -> Unit) {
-        try {
-            func()
-        } catch (e: Throwable) {
-            logException(e)
-        }
-    }
-
-
-    @JvmStatic
-    inline fun catchLogNoMsg(func: () -> Unit) {
-        try {
-            func()
-        } catch (e: Throwable) {
-            logException(e, false)
-        }
-    }
 
     /**
      * 弹出toast消息
@@ -309,49 +288,7 @@ object df {
         }
     }
 
-    /**
-     * 获取app内部目录
-     */
-    @JvmStatic
-    fun getInnerFileDir(): File {
-        return appContext!!.filesDir
-    }
 
-    /**
-     * 获取app的默认目录
-     */
-    @JvmStatic
-    fun getFileDir(): File {
-        try {
-            val file = appContext?.getExternalFilesDir(null)
-            if (file != null && file.exists())
-                return file;
-
-            val f2 = appContext?.filesDir
-            if (f2 != null)
-                return f2;
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        return getInnerFileDir();
-    }
-
-    @JvmStatic
-    fun getExternalDir(): File {
-        try {
-            val sdCardExist =
-                Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED   //判断sd卡是否存在
-            if (sdCardExist) {
-                return Environment.getExternalStorageDirectory()//获取跟目录
-            }
-        } catch (e: Exception) {
-
-        }
-
-        return getFileDir()
-    }
 
     /**
      * 遍历指定类型的所有字段
@@ -377,44 +314,7 @@ object df {
         }
     }
 
-    @JvmStatic
-    fun getInnerCacheDir(): File {
-        try {
-            val f2 = appContext?.cacheDir
-            if (f2 != null)
-                return f2;
 
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        return File("/sdcard/")
-    }
-
-    @JvmStatic
-    fun getCacheDir(): File {
-        try {
-            val file = appContext?.externalCacheDir
-            if (file != null && file.exists())
-                return file;
-
-            val f2 = appContext?.cacheDir
-            if (f2 != null)
-                return f2;
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        return File("/sdcard/")
-    }
-
-    @JvmStatic
-    fun createDir(menu: File): File {
-        if (!menu.exists())
-            menu.mkdirs()
-        return menu
-    }
 
     /**
      * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
@@ -463,10 +363,7 @@ object df {
         }
     }
 
-    @JvmStatic
-    fun getLogFile(): File {
-        return getFileDir() + "/err.log";
-    }
+
 
     @JvmStatic
     val now: String
@@ -489,25 +386,7 @@ object df {
     }
 
 
-    /**
-     * 写日志函数
-     */
-    @JvmStatic
-    var writeLogFunc = fun(text: String, file: File): Boolean {
-        try {
-            if (file.length() > 2 * 1024 * 1024) {
-                file.delete()
-            }
 
-            file.appendText("------$now------\r\n$text\r\n\r\n")
-
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            return false
-        }
-
-        return true
-    };
 
 
     fun swapData(datas: List<*>, fromPosition: Int, toPosition: Int) {
@@ -522,14 +401,7 @@ object df {
         }
     }
 
-    /**
-     * 向file目录写日志
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun writeLog(text: String, file: File = getLogFile()): Boolean {
-        return writeLogFunc(text, file)
-    }
+
 
     fun numberFix2(num: Long): String {
         if (num < 10)
@@ -625,7 +497,7 @@ object df {
                 val alert = bu.setPositiveButton(
                     dfStr.ok,
                     DialogInterface.OnClickListener { dialogInterface, i ->
-                        df.catchLog { onOk() }
+                        FileExt.catchLog { onOk() }
                     }).create()
                 alert.show()
             }
@@ -660,11 +532,11 @@ object df {
                     val alert = bu.setPositiveButton(
                         dfStr.ok,
                         DialogInterface.OnClickListener { dialogInterface, i ->
-                            df.catchLog { conti.resume(true) }
+                            FileExt.catchLog { conti.resume(true) }
                         }).setNegativeButton(
                         dfStr.cancel,
                         DialogInterface.OnClickListener { dialogInterface, i ->
-                            df.catchLog { conti.resume(false) }
+                            FileExt.catchLog { conti.resume(false) }
                         })
                         .create()
                     alert.show()
@@ -675,24 +547,7 @@ object df {
             }
         }
 
-    /**
-     * 将异常写入日志
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun logException(arg1: Throwable, msgDialog: Boolean = true, msg: String = "") {
-        Log.e("wwwwwwwwwwwwww" + msg, "error", arg1)
-        df.writeLog(msg + "--------\r\n" + getStackTraceInfo(arg1))
-        if (msgDialog) {
-            if (arg1 is MsgException) {
-                if (arg1.showAble)
-                    df.msg(arg1.message)
-            } else {
-                msgDialog(arg1.message, dfStr.error)
-            }
 
-        }
-    }
 
     @JvmStatic
     fun createView(id: Int): View {
@@ -777,7 +632,7 @@ object df {
     @JvmStatic
     fun setOnClick(vi: View, click: Func0) {
         vi.setOnClickListener { v ->
-            df.catchLog { click.run() }
+            FileExt.catchLog { click.run() }
         }
     }
 

@@ -59,7 +59,7 @@ class Animator(val vi: View, val autoStart: Boolean = true, val timeMill: Long =
         }
         a.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationEnd(animation: Animation?) {
-                df.catchLog { onOk(a) }
+                FileExt.catchLog { onOk(a) }
             }
 
             override fun onAnimationStart(animation: Animation?) {
@@ -96,7 +96,7 @@ class Animator(val vi: View, val autoStart: Boolean = true, val timeMill: Long =
         }
         a.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationEnd(animation: Animation?) {
-                df.catchLog { onOk(a) }
+                FileExt.catchLog { onOk(a) }
             }
 
             override fun onAnimationStart(animation: Animation?) {
@@ -125,7 +125,7 @@ class Animator(val vi: View, val autoStart: Boolean = true, val timeMill: Long =
 
         a.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationEnd(animation: Animation?) {
-                df.catchLog { onOk(a) }
+                FileExt.catchLog { onOk(a) }
             }
 
             override fun onAnimationStart(animation: Animation?) {

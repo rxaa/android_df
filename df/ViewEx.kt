@@ -48,33 +48,6 @@ open class ViewEx(private val cont: Context) {
         return BindView(func, bindList);
     }
 
-    var renderList: HashMap<View, () -> Unit>? = null;
-
-    /**
-     * 触发单个View的渲染函数
-     */
-    fun <T : View> T.render(): T {
-        val renderList = renderList ?: return this
-
-        val func = renderList[this];
-        if (func != null)
-            func();
-        return this
-    }
-
-    /**
-     * 设置view的渲染函数
-     */
-    fun <T : View> T.render(func: T.() -> Unit): T {
-        if (renderList == null)
-            renderList = HashMap<View, () -> Unit>()
-
-        renderList!![this] = {
-            func(this)
-        }
-        return this
-    }
-
 
     /**
      * 清除指定的viewGroup,并将其成员View加入缓存
@@ -88,6 +61,13 @@ open class ViewEx(private val cont: Context) {
         }
     }
 
+
+    /**
+     * view scroll回调
+     */
+    open fun onScroll(){
+
+    }
 
     /**
      * 向指定的ViewGroup添加ViewEx
@@ -119,13 +99,6 @@ open class ViewEx(private val cont: Context) {
         val v = newViewFunc();
         view.addView(v.getView());
         return v;
-    }
-
-    /**
-     * 触发所有View的render函数
-     */
-    fun renderAll() {
-        renderList?.forEach { it.value() }
     }
 
 
@@ -235,10 +208,10 @@ open class ViewEx(private val cont: Context) {
         _rootDialog!!.setCanceledOnTouchOutside(cancelAble)
 
         _rootDialog!!.setOnDismissListener {
-            df.catchLog { onClose() }
+            FileExt.catchLog { onClose() }
         }
 
-        df.catchLog {
+        FileExt.catchLog {
             onDialogShow(_rootDialog!!)
         }
         onPreShow(_rootDialog!!);

@@ -24,8 +24,8 @@ open class HttpReq<T : Any>() {
         /**
          * http日志目录
          */
-        var getHttpLogFile = { df.getFileDir() + "/http.txt" }
-        var getHttpErrorLogFile = { df.getFileDir() + "/httpError.txt" }
+        var getHttpLogFile = { FileExt.getFileDir() + "/http.txt" }
+        var getHttpErrorLogFile = { FileExt.getFileDir() + "/httpError.txt" }
 
     }
 
@@ -204,7 +204,7 @@ open class HttpReq<T : Any>() {
 
 
     var writeLog = { cont: String ->
-        df.writeLog(cont, getHttpLogFile())
+        FileExt.writeLog(cont, getHttpLogFile())
     }
     /**
      *是否开启传输日志
@@ -253,10 +253,10 @@ open class HttpReq<T : Any>() {
         respText = respCont;
         if (httpLog) {
             if (code >= 400) {
-                df.writeLog("resp code: " + code, getHttpLogFile())
-                df.writeLog("resp code: " + code + "\r\n" + respCont, getHttpErrorLogFile())
+                FileExt.writeLog("resp code: " + code, getHttpLogFile())
+                FileExt.writeLog("resp code: " + code + "\r\n" + respCont, getHttpErrorLogFile())
             } else
-                df.writeLog("resp code: " + code + "\r\n" + respCont, getHttpLogFile())
+                FileExt.writeLog("resp code: " + code + "\r\n" + respCont, getHttpLogFile())
         }
 
         parseResp(respCont, code);

@@ -2,33 +2,56 @@ package rxaa.df
 
 import java.util.*
 
-inline fun <T> MutableList<T>?.pop(func: (last: T) -> Unit): Boolean {
-    if (this != null && this.size > 0) {
-        func(this.get(this.size - 1));
-        this.removeAt(this.size - 1)
-        return true
-    }
-    return false;
-}
 
 fun String.removeLast(): String {
     return this.substring(0, this.length - 1)
 }
 
-fun <K, V, RET> Map<K, V>?.toArray(func: (k: K, v: V) -> RET): ArrayList<RET> {
-    val arr = ArrayList<RET>();
-    if (this != null) {
-        for ((k, v) in this) {
-            arr.add(func(k, v));
-        }
+
+
+
+/**
+ * 从字串中抽取数字
+ */
+fun String?.getNumber(): String {
+    if (this == null || this.length == 0)
+        return ""
+    var ret = "";
+    this.forEach {
+        if (it in '0'..'9')
+            ret += it
     }
-    return arr;
+
+    return ret
 }
 
-fun <T, T2> List<T>.toHashMap(func: (k: T) -> T2): HashMap<T2, T> {
-    val map = HashMap<T2, T>()
-    for (v in this) {
-        map[func(v)] = v;
+fun String?.getInt(default: Int = 0): Int {
+    if (this == null || this.length == 0)
+        return default
+    try {
+        return this.toDouble().toInt()
+    } catch (e: Exception) {
     }
-    return map
+
+    return default
+}
+
+fun String?.getLong(default: Long = 0): Long {
+    if (this == null || this.length == 0)
+        return default
+    try {
+        return this.toDouble().toLong()
+    } catch (e: Exception) {
+    }
+    return default
+}
+
+fun String?.getDouble(default: Double = 0.0): Double {
+    if (this == null || this.length == 0)
+        return default
+    try {
+        return this.toDouble()
+    } catch (e: Exception) {
+    }
+    return default
 }

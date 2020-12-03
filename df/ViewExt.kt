@@ -12,13 +12,7 @@ import android.widget.CompoundButton
 import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 
-fun String?.isEmpty(): Boolean {
-    if (this == null)
-        return true;
-    if (this.length == 0)
-        return true;
-    return false;
-}
+
 
 val Int.resource: String
     get() = df.appContext!!.resources.getString(this);
@@ -108,7 +102,7 @@ fun <T : View> T.onLongClick(cb: suspend (v: T) -> Unit): T {
 
 fun <T : View> T.onTouch(cb: (event: MotionEvent) -> Boolean): T {
     this.setOnTouchListener { view, motionEvent ->
-        df.catchLog { return@setOnTouchListener cb(motionEvent) }
+        FileExt.catchLog { return@setOnTouchListener cb(motionEvent) }
         false
     }
     return this
@@ -153,7 +147,7 @@ fun Context?.ui(func: () -> Unit) {
 
 fun <T : CompoundButton> T.onCheckedChanged(cb: (isChecked: Boolean) -> Unit): T {
     this.setOnCheckedChangeListener { compoundButton, b ->
-        df.catchLog { cb(b) }
+        FileExt.catchLog { cb(b) }
     }
     return this
 }
@@ -170,94 +164,13 @@ fun Dialog?.setLocation(x: Int, y: Int, gravity: Int = Gravity.LEFT or Gravity.T
 
 fun android.widget.AdapterView<*>?.onItemClick(cb: (index: Int) -> Unit) {
     this?.setOnItemClickListener { adapterView, view, i, l ->
-        df.catchLog { cb(i) }
+        FileExt.catchLog { cb(i) }
     }
 }
 
 fun android.widget.AdapterView<*>?.onItemLongClick(cb: (index: Int) -> Boolean) {
     this?.setOnItemLongClickListener { adapterView, view, i, l ->
-        df.catchLog { return@setOnItemLongClickListener cb(i) }
+        FileExt.catchLog { return@setOnItemLongClickListener cb(i) }
         return@setOnItemLongClickListener false
     }
-}
-
-/**
- * 转换为带单位的字节大小
- */
-fun Long.toByteString(): String {
-    if (this <= 1024) {
-        return "" + this + " Byte"
-    }
-
-    if (this <= 1024 * 1024) {
-        return "" + this / 1024 + " KB"
-    }
-
-    if (this <= 1024 * 1024 * 1024) {
-        return "%.1f MB".format(this.toDouble() / 1024.0 / 1024.0)
-    }
-
-    return "%.1f GB".format(this.toDouble() / 1024.0 / 1024.0 / 1024.0)
-}
-
-/**
- * 转换为带单位的字节大小
- */
-fun Int.toByteString(): String {
-    return this.toLong().toByteString()
-}
-
-/**
- * 转换为至少两位字串
- */
-fun Int.to2String(): String {
-    if (this < 10)
-        return "0" + this
-    return this.toString();
-}
-
-/**
- * 从字串中抽取数字
- */
-fun String?.getNumber(): String {
-    if (this == null || this.length == 0)
-        return ""
-    var ret = "";
-    this.forEach {
-        if (it in '0'..'9')
-            ret += it
-    }
-
-    return ret
-}
-
-fun String?.getInt(default: Int = 0): Int {
-    if (this == null || this.length == 0)
-        return default
-    try {
-        return this.toDouble().toInt()
-    } catch (e: Exception) {
-    }
-
-    return default
-}
-
-fun String?.getLong(default: Long = 0): Long {
-    if (this == null || this.length == 0)
-        return default
-    try {
-        return this.toDouble().toLong()
-    } catch (e: Exception) {
-    }
-    return default
-}
-
-fun String?.getDouble(default: Double = 0.0): Double {
-    if (this == null || this.length == 0)
-        return default
-    try {
-        return this.toDouble()
-    } catch (e: Exception) {
-    }
-    return default
 }

@@ -324,7 +324,7 @@ class ViewPageEx : ViewPager {
     }
 
     private fun doPageSelected(i: Int) {
-        df.catchLog {
+        FileExt.catchLog {
             if (viewSelectList.size == viewList.size)
                 viewSelectList[i]();
             if (onPageSelect != null) {
@@ -379,7 +379,7 @@ class ViewPageEx : ViewPager {
                     onPageScrol!!.run(arg0, arg1, arg2)
                 } catch (e: Throwable) {
                     // TODO Auto-generated catch block
-                    df.logException(e, true)
+                    FileExt.logException(e, true)
                 }
 
             }
@@ -394,7 +394,7 @@ class ViewPageEx : ViewPager {
                     onPageStateChanged!!.run(arg0)
                 } catch (e: Throwable) {
                     // TODO Auto-generated catch block
-                    df.logException(e, true)
+                    FileExt.logException(e, true)
                 }
 
             }

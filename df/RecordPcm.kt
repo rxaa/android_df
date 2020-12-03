@@ -84,7 +84,7 @@ class RecordPcm(
         isStop = false
         Thread() {
             synchronized(this) {
-                df.catchLog {
+                FileExt.catchLog {
                     val audioRecord = create()
                     val aac = AACEncode(FREQUENCY)
                     var fOut: FileOutputStream? = null

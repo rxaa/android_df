@@ -3,6 +3,7 @@ package rxaa.db
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import rxaa.df.FileExt
 import rxaa.df.df
 import java.lang.reflect.Field
 import java.util.*
@@ -56,7 +57,7 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
         helper = Helper(dbName, version, this)
         db = helper!!.writableDatabase
         if (helper!!.needUpgrade) {
-            df.catchLog { onUpgrade(this) }
+            FileExt.catchLog { onUpgrade(this) }
         }
     }
 
@@ -178,7 +179,7 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
 
         val indexs = ArrayList<String>()
 
-        df.getClassFields(fields) { f, i ->
+        df.getClassFields(fields) { f, _ ->
             val fName = SqlData.getFieldName(f, false)
             sqlStr.append("`$fName`" + getFieldType(f) + getFieldInfo(f) + ",")
 
@@ -195,7 +196,7 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
 
         db!!.execSQL(sqlStr.toString())
         for (index in indexs) {
-            df.catchLog { db!!.execSQL(index) }
+            FileExt.catchLog { db!!.execSQL(index) }
         }
     }
 

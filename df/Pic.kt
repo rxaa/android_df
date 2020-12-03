@@ -181,7 +181,7 @@ object Pic {
                 iv.setImageBitmap(Pic.readBigBitmap(pic))
         } catch (e: Throwable) {
             df.msg("内存不足,图片读取失败!")
-            df.logException(e, false)
+            FileExt.logException(e, false)
         }
 
     }
@@ -531,7 +531,7 @@ object Pic {
             fileOutputStream.flush()
             fileOutputStream.close()
         } catch (e: Throwable) {
-            df.logException(e)
+            FileExt.logException(e)
         }
 
     }
@@ -573,7 +573,7 @@ object Pic {
             fileOutputStream.flush()
             fileOutputStream.close()
         } catch (e: Throwable) {
-            df.logException(e)
+            FileExt.logException(e)
         }
 
     }
@@ -586,11 +586,11 @@ object Pic {
 
     @JvmStatic
     val cameraFile: File
-        get() = (df.getInnerCacheDir() + "/camera.jpg")
+        get() = (FileExt.getInnerCacheDir() + "/camera.jpg")
 
     @JvmStatic
     val cropFile: File
-        get() = (df.getInnerCacheDir() + "/crop.png")
+        get() = (FileExt.getInnerCacheDir() + "/crop.png")
 
     /**
      * 拍照
@@ -614,7 +614,7 @@ object Pic {
         } catch (e: Exception) {
 
             df.msg("摄像头启动失败!")
-            df.logException(e, false)
+            FileExt.logException(e, false)
             takePhotoFunc = null
 
         }
@@ -676,7 +676,7 @@ object Pic {
             getFileTable = res
             act.startActivityForResult(intent, cropFileTag)
         } catch (e: Throwable) {
-            df.logException(e)
+            FileExt.logException(e)
             getFileTable = null
         }
 
@@ -710,7 +710,7 @@ object Pic {
             getFileTable = res
             act.startActivityForResult(intent, cropFileTag)
         } catch (e: Throwable) {
-            df.logException(e)
+            FileExt.logException(e)
             getFileTable = null
         }
 
@@ -733,7 +733,7 @@ object Pic {
             getFileTable = res
             act.startActivityForResult(intent, getFileTag)
         } catch (e: Throwable) {
-            df.logException(e)
+            FileExt.logException(e)
             getFileTable = null
         }
 

@@ -27,7 +27,7 @@ open class HttpDown {
         }
 
         fun getCacheMenu(): File {
-            return df.getCacheDir() + "/down/"
+            return FileExt.getCacheDir() + "/down/"
         }
 
     }

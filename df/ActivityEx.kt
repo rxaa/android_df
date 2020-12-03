@@ -47,24 +47,24 @@ open class ActivityEx : Activity() {
     override fun setContentView(layoutResID: Int) {
         super.setContentView(layoutResID)
 
-        df.catchLog { bindList.forEach { it() } }
+        FileExt.catchLog { bindList.forEach { it() } }
 
     }
 
     open override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         ActivityEx.onActivityResult(this, requestCode, resultCode, data);
-        df.catchLog { onActivityResultEx(requestCode, resultCode, data) }
+        FileExt.catchLog { onActivityResultEx(requestCode, resultCode, data) }
     }
 
     override fun setContentView(view: View?) {
         super.setContentView(view)
-        df.catchLog { bindList.forEach { it() } }
+        FileExt.catchLog { bindList.forEach { it() } }
     }
 
     override fun setContentView(view: View?, params: ViewGroup.LayoutParams?) {
         super.setContentView(view, params)
-        df.catchLog { bindList.forEach { it() } }
+        FileExt.catchLog { bindList.forEach { it() } }
     }
 
     fun getContext(): ActivityEx {
@@ -111,7 +111,7 @@ open class ActivityEx : Activity() {
      * 触发所有View的render函数
      */
     fun renderAll() {
-        df.catchLog { renderList.forEach { it.value() } }
+        FileExt.catchLog { renderList.forEach { it.value() } }
 
     }
 
@@ -138,7 +138,7 @@ open class ActivityEx : Activity() {
         procAct(this)
         if (isKilled(this))
             return
-        df.catchLog {
+        FileExt.catchLog {
             createList.forEach { it() }
 
             onCreateEx()
@@ -150,7 +150,7 @@ open class ActivityEx : Activity() {
             preDraw = ViewTreeObserver.OnPreDrawListener {
                 // TODO Auto-generated method stub
                 rootView!!.viewTreeObserver.removeOnPreDrawListener(preDraw)
-                df.catchLog { onPreDraw() }
+                FileExt.catchLog { onPreDraw() }
 
                 true
             }
@@ -167,7 +167,7 @@ open class ActivityEx : Activity() {
 
         super.onDestroy()
 
-        df.catchLog { onDestoryEx() }
+        FileExt.catchLog { onDestoryEx() }
 
     }
 
@@ -178,7 +178,7 @@ open class ActivityEx : Activity() {
         super.onResume()
         df.currentActivity = this
 
-        df.catchLog { onResumeEx() }
+        FileExt.catchLog { onResumeEx() }
 
         isFirst = false;
     }
@@ -187,7 +187,7 @@ open class ActivityEx : Activity() {
     final override fun onPause() {
         isShow = false
         super.onPause()
-        df.catchLog { onPauseEx() }
+        FileExt.catchLog { onPauseEx() }
     }
 
 
@@ -250,7 +250,7 @@ open class ActivityEx : Activity() {
             permissions: Array<out String>?,
             grantResults: IntArray
         ) {
-            df.catchLog {
+            FileExt.catchLog {
                 permissionCameraContinuation[requestCode].notNull {
                     permissionCameraContinuation.remove(requestCode)
                     it.resume(
@@ -284,7 +284,7 @@ open class ActivityEx : Activity() {
                 if (currentFilePath == null || currentFilePath!!.length < 1)
                     return
 
-                df.catchLog {
+                FileExt.catchLog {
                     res.run(currentFilePath)
                 }
 
@@ -300,7 +300,7 @@ open class ActivityEx : Activity() {
                 if (resultCode != Activity.RESULT_OK)
                     return
 
-                df.catchLog {
+                FileExt.catchLog {
                     res.run(Pic.cropFile.toString())
                 }
 
@@ -314,7 +314,7 @@ open class ActivityEx : Activity() {
                 if (resultCode != Activity.RESULT_OK)
                     return
 
-                df.catchLog {
+                FileExt.catchLog {
                     res.run(Pic.cameraFile.toString())
                 }
 
@@ -401,7 +401,7 @@ open class ActivityEx : Activity() {
 
             val res = funMap[para]
             if (res != null) {
-                df.catchLog { res(act) }
+                FileExt.catchLog { res(act) }
             }
 
             if (act.intent.getBooleanExtra(allowKilledStr, false))

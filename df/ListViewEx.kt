@@ -38,6 +38,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
         defaultViewClass = T::class.java
     }
 
+
     /**
      * 同RecyclerView, 显示View item回调
      */
@@ -65,10 +66,13 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     internal var _recyclerView: RecyclerView? = null
 
     /**
-     *  缓存item成员的动态view
+     *  缓存view item的子view
      */
     internal var viewBuffer: HashMap<Class<*>, ArrayList<ViewEx>>? = null
 
+    /**
+     * view item子view最大缓存数
+     */
     val maxViewBuffer = 10;
 
     fun getViewBuffer(clas: Class<*>): ViewEx? {
@@ -296,7 +300,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
                         onItemClick!!(i, view)
                 } catch (e: Throwable) {
                     // TODO Auto-generated catch block
-                    df.logException(e, true)
+                    FileExt.logException(e, true)
                 }
             }
 
@@ -310,7 +314,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
                         return@OnItemLongClickListener onItemLongClick!!(arg2, arg1)
                 } catch (e: Throwable) {
                     // TODO Auto-generated catch block
-                    df.logException(e, true)
+                    FileExt.logException(e, true)
                 }
 
                 false
@@ -341,7 +345,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
                     onItemClick!!(arg2, arg1)
             } catch (e: Throwable) {
                 // TODO Auto-generated catch block
-                df.logException(e, true)
+                FileExt.logException(e, true)
             }
         }
 
@@ -357,7 +361,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
                         return@OnItemLongClickListener onItemLongClick!!(arg2, arg1)
                 } catch (e: Throwable) {
                     // TODO Auto-generated catch block
-                    df.logException(e, true)
+                    FileExt.logException(e, true)
                 }
 
                 false
@@ -401,7 +405,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
                             return@OnLongClickListener onItemLongClick!!(index, v)
                         } catch (e: Exception) {
                             // TODO Auto-generated catch block
-                            df.logException(e, true)
+                            FileExt.logException(e, true)
                         }
                         false
                     })
@@ -412,7 +416,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
             return v
         } catch (e: Throwable) {
             // TODO Auto-generated catch block
-            df.logException(e, true)
+            FileExt.logException(e, true)
         }
 
         return vi
@@ -727,7 +731,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
                 onBindView(vi, index)
                 return vi.getView()
             } catch (e: Throwable) {
-                df.logException(e, true)
+                FileExt.logException(e, true)
             }
             return arg1
         }

@@ -10,13 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import java.util.*
 
 
-private val instAct = HashMap<String, ActCompat?>()
-
-val <T : ActCompat> Class<T>.inst: T?
-    get() = instAct[this.name] as T?
-
-
-
 open class ActCompat : AppCompatActivity() {
     @Throws(Exception::class)
     open fun onCreateEx() {
@@ -62,24 +55,24 @@ open class ActCompat : AppCompatActivity() {
     final override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         ActivityEx.onActivityResult(this, requestCode, resultCode, data);
-        df.catchLog { onActivityResultEx(requestCode, resultCode, data) }
+        FileExt.catchLog { onActivityResultEx(requestCode, resultCode, data) }
     }
 
     override fun setContentView(layoutResID: Int) {
         super.setContentView(layoutResID)
 
-        df.catchLog { bindList.forEach { it() } }
+        FileExt.catchLog { bindList.forEach { it() } }
 
     }
 
     override fun setContentView(view: View?) {
         super.setContentView(view)
-        df.catchLog { bindList.forEach { it() } }
+        FileExt.catchLog { bindList.forEach { it() } }
     }
 
     override fun setContentView(view: View?, params: ViewGroup.LayoutParams?) {
         super.setContentView(view, params)
-        df.catchLog { bindList.forEach { it() } }
+        FileExt.catchLog { bindList.forEach { it() } }
     }
 
     fun getContext(): ActCompat {
@@ -107,35 +100,6 @@ open class ActCompat : AppCompatActivity() {
         return BindView(func, createList);
     }
 
-    val renderList = HashMap<View, () -> Unit>();
-
-    /**
-     * 触发单个View的渲染函数
-     */
-    fun <T : View> T.render(): T {
-        val func = renderList[this];
-        if (func != null)
-            func();
-        return this
-    }
-
-    /**
-     * 设置view的渲染函数
-     */
-    fun <T : View> T.render(func: T.(vi: T) -> Unit): T {
-        renderList[this] = {
-            func(this)
-        }
-        return this
-    }
-
-    /**
-     * 触发所有View的render函数
-     */
-    fun renderAll() {
-        df.catchLog { renderList.forEach { it.value() } }
-
-    }
 
 
     /**
@@ -157,8 +121,7 @@ open class ActCompat : AppCompatActivity() {
         if (ActivityEx.isKilled(this))
             return
 
-        instAct[this.javaClass.name] = this;
-        df.catchLog {
+        FileExt.catchLog {
 
             createList.forEach { it() }
 
@@ -173,7 +136,7 @@ open class ActCompat : AppCompatActivity() {
                 // TODO Auto-generated method stub
                 rootView!!.viewTreeObserver.removeOnPreDrawListener(preDraw)
 
-                df.catchLog { onPreDraw() }
+                FileExt.catchLog { onPreDraw() }
 
                 true
             }
@@ -182,7 +145,6 @@ open class ActCompat : AppCompatActivity() {
     }
 
     final override fun onDestroy() {
-        instAct[this.javaClass.name] = null
 
         if (df.currentActivity === this)
             df.currentActivity = null
@@ -191,10 +153,9 @@ open class ActCompat : AppCompatActivity() {
 
         super.onDestroy()
 
-        df.catchLog { onDestoryEx() }
+        FileExt.catchLog { onDestoryEx() }
 
     }
-
 
     var isShow = false;
     final override fun onResume() {
@@ -202,7 +163,7 @@ open class ActCompat : AppCompatActivity() {
         super.onResume()
         df.currentActivity = this
 
-        df.catchLog { onResumeEx() }
+        FileExt.catchLog { onResumeEx() }
 
         isFirst = false;
     }
@@ -211,12 +172,12 @@ open class ActCompat : AppCompatActivity() {
     final override fun onPause() {
         isShow = false;
         super.onPause()
-        df.catchLog { onPauseEx() }
+        FileExt.catchLog { onPauseEx() }
     }
 
     final override fun onStop() {
         super.onStop()
-        df.catchLog { onStopEx() }
+        FileExt.catchLog { onStopEx() }
     }
 
 

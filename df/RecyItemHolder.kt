@@ -24,7 +24,7 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyItemHolder {
-        df.catchLog {
+        FileExt.catchLog {
             if (viewType <= list.headViewType)
                 return RecyItemHolder(list.headViewList[list.headViewType - viewType])
             else if (viewType <= list.footViewType)
@@ -36,7 +36,7 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
     }
 
     override fun getItemViewType(position: Int): Int {
-        df.catchLog {
+        FileExt.catchLog {
             if (list.headViewList.size > 0 && position < list.headViewList.size) {
                 return list.headViewType - position;
             } else if (list.footViewList.size > 0 && position >= list.data.size + list.headViewList.size) {
@@ -50,7 +50,7 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
     }
 
     override fun onBindViewHolder(holder: RecyItemHolder, position: Int) {
-        df.catchLog {
+        FileExt.catchLog {
             if (position >= list.headViewList.size && position < list.headViewList.size + list.data.size) {
                 val index = position - list.headViewList.size;
                 list.onBindView(holder.view, index)
@@ -154,7 +154,7 @@ class ItemDragCallback(
             lve.recyAdapter!!.notifyItemMoved(fromPosition, toPosition);
             onMove(datFrom, datTo);
         } catch (e: Exception) {
-            df.logException(e)
+            FileExt.logException(e)
             return false
         }
         return true;

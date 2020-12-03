@@ -5,6 +5,8 @@ import android.content.Intent
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
+import android.util.Log
 import androidx.core.content.FileProvider
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -15,6 +17,142 @@ import java.util.*
 
 
 object FileExt {
+
+    /**
+     * 获取app内部目录
+     */
+    @JvmStatic
+    fun getInnerFileDir(): File {
+        return df.appContext!!.filesDir
+    }
+
+    /**
+     * 获取app的默认目录
+     */
+    @JvmStatic
+    fun getFileDir(): File {
+        try {
+            val file = df.appContext?.getExternalFilesDir(null)
+            if (file != null && file.exists())
+                return file;
+
+            val f2 = df.appContext?.filesDir
+            if (f2 != null)
+                return f2;
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return getInnerFileDir();
+    }
+
+    @JvmStatic
+    fun getExternalDir(): File {
+        try {
+            val sdCardExist =
+                Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED   //判断sd卡是否存在
+            if (sdCardExist) {
+                return Environment.getExternalStorageDirectory()//获取跟目录
+            }
+        } catch (e: Exception) {
+
+        }
+
+        return getFileDir()
+    }
+
+    @JvmStatic
+    fun getInnerCacheDir(): File {
+        try {
+            val f2 = df.appContext?.cacheDir
+            if (f2 != null)
+                return f2;
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return File("/sdcard/")
+    }
+
+    @JvmStatic
+    fun getCacheDir(): File {
+        try {
+            val file = df.appContext?.externalCacheDir
+            if (file != null && file.exists())
+                return file;
+
+            val f2 = df.appContext?.cacheDir
+            if (f2 != null)
+                return f2;
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return File("/sdcard/")
+    }
+
+    @JvmStatic
+    fun createDir(menu: File): File {
+        if (!menu.exists())
+            menu.mkdirs()
+        return menu
+    }
+
+    @JvmStatic
+    fun getLogFile(): File {
+        return getFileDir() + "/err.log";
+    }
+
+    /**
+     * 写日志函数
+     */
+    @JvmStatic
+    var writeLogFunc = fun(text: String, file: File): Boolean {
+        try {
+            if (file.length() > 2 * 1024 * 1024) {
+                file.delete()
+            }
+
+            file.appendText("------${df.now}------\r\n$text\r\n\r\n")
+
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            return false
+        }
+
+        return true
+    };
+
+    /**
+     * 向file目录写日志
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun writeLog(text: String, file: File = getLogFile()): Boolean {
+        return writeLogFunc(text, file)
+    }
+
+    /**
+     * 将异常写入日志
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun logException(arg1: Throwable, msgDialog: Boolean = true, msg: String = "") {
+        Log.e("wwwwwwwwwwwwww" + msg, "error", arg1)
+       writeLog(msg + "--------\r\n" + df.getStackTraceInfo(arg1))
+        if (msgDialog) {
+            if (arg1 is MsgException) {
+                if (arg1.showAble)
+                    df.msg(arg1.message)
+            } else {
+                df.msgDialog(arg1.message, dfStr.error)
+            }
+
+        }
+    }
 
     fun setSpeakerphoneOn(isSpeakerphoneOn: Boolean) {
         val audioManager = df.appContext!!.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -152,11 +290,33 @@ object FileExt {
             cont.startActivity(intent) //这里最好try一下，有可能会报错。 //比如说你的MIME类型是打开邮箱，但是你手机里面没装邮箱客户端，就会报错。
             return true
         } catch (e: Exception) {
-            df.logException(e, false)
+            FileExt.logException(e, false)
             df.msg("无法打开此类型文件!")
             return false
         }
 
+    }
+
+    /**
+     * 捕获所有异常加入日志,并弹窗
+     */
+    @JvmStatic
+    inline fun catchLog(func: () -> Unit) {
+        try {
+            func()
+        } catch (e: Throwable) {
+            logException(e)
+        }
+    }
+
+
+    @JvmStatic
+    inline fun catchLogNoMsg(func: () -> Unit) {
+        try {
+            func()
+        } catch (e: Throwable) {
+            logException(e, false)
+        }
     }
 
 

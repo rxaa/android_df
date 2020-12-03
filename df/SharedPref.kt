@@ -8,7 +8,7 @@ object SharedPref {
     fun objToFile(obj: Any, file: SharedPreferences) {
         val editor = file.edit()
         df.getClassFields(obj.javaClass) { f, i ->
-            df.catchLog {
+            FileExt.catchLog {
                 when (f.type) {
                     String::class.java -> {
                         editor.putString(f.name, "" + f.get(obj))
@@ -43,7 +43,7 @@ object SharedPref {
     @JvmStatic
     fun fileToObj(file: SharedPreferences, obj: Any) {
         df.getClassFields(obj.javaClass) { f, i ->
-            df.catchLog {
+            FileExt.catchLog {
                 if (!file.contains(f.name))
                     return@getClassFields
 

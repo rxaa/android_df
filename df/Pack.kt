@@ -42,18 +42,18 @@ object Pack {
                     Settings.Secure.ANDROID_ID
                 )
 
-                if (deviceId.isEmpty() || deviceId == "9774d56d682e549c") {
+                if (deviceId.isNullOrEmpty() || deviceId == "9774d56d682e549c") {
                     deviceId = (df.appContext!!.getSystemService(
                         Context.TELEPHONY_SERVICE
                     ) as TelephonyManager).deviceId
-                    if (deviceId.isEmpty())
+                    if (deviceId.isNullOrEmpty())
                         deviceId = Build.SERIAL
 
                 }
             } catch (e: Throwable) {
                 deviceId = Build.SERIAL
             }
-            if (deviceId.isEmpty()) {
+            if (deviceId.isNullOrEmpty()) {
                 //都没有则自己创建一个
                 deviceId = dfCfg.cfgFile.dat.deviceId;
                 dfCfg.cfgFile.save()
@@ -96,7 +96,7 @@ object Pack {
 
     @JvmStatic
     fun isAppInstalled(packagename: String): Boolean {
-        df.catchLog {
+        FileExt.catchLog {
             val packageInfo = df.appContext?.packageManager?.getPackageInfo(packagename, 0)
             if (packageInfo != null)
                 return true
@@ -107,7 +107,7 @@ object Pack {
     @JvmStatic
     val versionCode: Int
         get() {
-            df.catchLog {
+            FileExt.catchLog {
                 val info = df.appContext?.packageManager?.getPackageInfo(
                     df.appContext?.packageName!!, 0
                 )
@@ -133,7 +133,7 @@ object Pack {
     @JvmStatic
     val versionName: String
         get() {
-            df.catchLog {
+            FileExt.catchLog {
                 val info = df.appContext?.packageManager?.getPackageInfo(
                     df.appContext?.packageName!!, 0
                 )

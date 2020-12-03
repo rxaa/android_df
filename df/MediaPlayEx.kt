@@ -113,12 +113,12 @@ class MediaPlayEx {
         media.setOnErrorListener { arg0, arg1, arg2 ->
             // TODO Auto-generated method stub
             media.setOnErrorListener(null)
-            df.catchLog { onStop?.run() }
+            FileExt.catchLog { onStop?.run() }
             true
         }
         media.setOnCompletionListener {
             // TODO Auto-generated method stub
-            df.catchLog { onStop?.run() }
+            FileExt.catchLog { onStop?.run() }
         }
     }
 
@@ -143,7 +143,7 @@ class MediaPlayEx {
             media.start()
         } catch (e: Exception) {
             // TODO Auto-generated catch block
-            df.logException(e)
+            FileExt.logException(e)
         }
 
     }
@@ -154,7 +154,7 @@ class MediaPlayEx {
             try {
                 return media.isPlaying || isPrepareAndPlaying
             } catch (e: Exception) {
-                df.logException(e)
+                FileExt.logException(e)
             }
 
             return false
@@ -246,7 +246,7 @@ class MediaPlayEx {
                 player.release();
                 return duration
             } catch(e: Exception) {
-                df.logException(e, false);
+                FileExt.logException(e, false);
             }
             return 0
         }
