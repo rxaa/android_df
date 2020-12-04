@@ -10,7 +10,6 @@ import android.view.ViewTreeObserver
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
-import net.huasi.zhengxie.circle.databinding.ActivityImageBinding
 import java.util.*
 
 
