@@ -23,14 +23,6 @@ open class ViewEx(private val cont: Context) {
         }
     }
 
-    fun <T : ViewDataBinding> dataBinding(view: View?, resId: Int): T {
-        return DataBindingUtil.bind<T>(
-            setContentView(
-                view,
-                resId
-            )
-        )!!
-    }
 
     var dialogStyle = 0;
 
@@ -59,6 +51,35 @@ open class ViewEx(private val cont: Context) {
         return BindView(func, bindList);
     }
 
+
+    class BindViewEx<out T>(val func: () -> T) : Lazy<T> {
+
+        override fun isInitialized(): Boolean {
+            return true
+        }
+
+        private val _value: T = func()
+
+        override val value: T
+            get() {
+                return _value
+            }
+    }
+
+
+    /**
+     *  return View's associated binding.
+     */
+    fun <T : ViewDataBinding> dataBinding(resId: Int, view: View? = null): BindViewEx<T> {
+        return BindViewEx {
+            DataBindingUtil.bind<T>(
+                setContentView(
+                    view,
+                    resId
+                )
+            )!!
+        }
+    }
 
     /**
      * 清除指定的viewGroup,并将其成员View加入缓存

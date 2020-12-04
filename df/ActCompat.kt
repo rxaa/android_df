@@ -1,12 +1,16 @@
 package rxaa.df
 
 import android.R
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
+import net.huasi.zhengxie.circle.databinding.ActivityImageBinding
 import java.util.*
 
 
@@ -43,11 +47,15 @@ open class ActCompat : AppCompatActivity() {
 
     }
 
-    fun <T:View> find(id: Int): T {
+    fun <T : View> find(id: Int): T {
         return findViewById<T>(id) as T;
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         ActivityEx.onActivityRequestPermissionsResult(requestCode, permissions, grantResults)
     }
@@ -86,6 +94,15 @@ open class ActCompat : AppCompatActivity() {
 
     val createList = ArrayList<() -> Unit>();
 
+
+    /**
+     * Set the Activity's content view to the given layout and return the associated binding.
+     */
+    fun <T : ViewDataBinding> dataBinding(resId: Int): BindView<T> {
+        return BindView({ DataBindingUtil.setContentView<T>(this, resId)!! }, createList);
+    }
+
+
     /**
      * 在setContentView之后调用,绑定view对象
      */
@@ -99,7 +116,6 @@ open class ActCompat : AppCompatActivity() {
     fun <T> create(func: () -> T): BindView<T> {
         return BindView(func, createList);
     }
-
 
 
     /**
