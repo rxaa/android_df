@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.view.get
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,7 +16,11 @@ import kotlin.collections.HashMap
  * 关联List<>数据, 自动配置Adapter, 并自动填充数据至ListView或LinearView或RecyclerView里
  * 使得调用者无需关心ListView或LinearView或RecyclerView之间的差异
  */
-open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView: ViewEx? = null) {
+open class ListViewEx<ListT>(
+    cont: Context,
+    groupView: ViewGroup,
+    val parentView: CommView? = null
+) {
 
     /**
      * 关联的List数据
@@ -27,22 +30,28 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     /**
      * 同RecyclerView, 创建View回调
      */
-    var onCreateView: (viewType: Int) -> ViewEx =
+    var onCreateView: (viewType: Int) -> CommView =
         { type -> throw Exception("Unimplement onCreateView function") }
-
-    /**
-     * 同RecyclerView, 创建View回调
-     */
-    inline fun <reified T : ViewEx> onCreate(noinline func: (viewType: Int) -> T) {
-        onCreateView = func;
-        defaultViewClass = T::class.java
-    }
-
 
     /**
      * 同RecyclerView, 显示View item回调
      */
-    var onBindView: (vi: ViewEx, position: Int) -> Unit = { vi: ViewEx, position: Int -> }
+    var onBindView: (vi: CommView, position: Int) -> Unit = { vi: CommView, position: Int -> }
+
+    /**
+     * 同RecyclerView, 设置 onCreateView 与 onBindView
+     */
+    inline fun <reified T : CommView> bindView(
+        noinline onCreate: (viewType: Int) -> T,
+        noinline onBind: (view: T, dat: ListT, index: Int) -> Unit
+    ) {
+
+        onCreateView = onCreate;
+        onBindView = { vi: CommView, position: Int ->
+            onBind(vi as T, data[position], position)
+        }
+        defaultViewClass = T::class.java
+    }
 
     /**
      * 同RecyclerView, 获取View类型回调
@@ -58,6 +67,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
 
 
     var defaultViewClass: Class<*>? = null;
+
     internal var listView: AbsListView? = null
     internal var mCont: android.content.Context? = null
     internal var adapt: LiAdapter? = null
@@ -68,14 +78,14 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     /**
      *  缓存view item的子view
      */
-    internal var viewBuffer: HashMap<Class<*>, ArrayList<ViewEx>>? = null
+    internal var viewBuffer: HashMap<Class<*>, ArrayList<CommView>>? = null
 
     /**
      * view item子view最大缓存数
      */
     val maxViewBuffer = 10;
 
-    fun getViewBuffer(clas: Class<*>): ViewEx? {
+    fun getViewBuffer(clas: Class<*>): CommView? {
         val list = viewBuffer?.get(clas);
         if (list != null && list.size > 0) {
             return list.removeLast();
@@ -85,35 +95,34 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
 
     fun addViewBuffer(vi: ViewGroup) {
         for (i in 0 until vi.childCount) {
-            addViewBuffer(vi.get(i));
+            vi.getChildAt(i).notNull {
+                if (it is CommView) {
+                    addViewBuffer(it);
+                }
+            }
+
         }
 
     }
 
-    fun addViewBuffer(vi: View) {
+    fun addViewBuffer(vEx: CommView) {
         val map = viewBuffer ?: HashMap();
         if (viewBuffer == null) {
             viewBuffer = map;
         }
-        val vEx = ViewEx.getFromTag(vi);
-        vEx.notNull {
-            map.get(it.javaClass).notNull {
-                addViewBuffer(vi, it)
-            }.nope {
-                val list = ArrayList<ViewEx>();
-                map.put(it.javaClass, list);
-                addViewBuffer(vi, list)
-            }
+        map.get(vEx.javaClass).notNull {
+            addViewBuffer(vEx, it)
+        }.nope {
+            val list = ArrayList<CommView>();
+            map.put(vEx.javaClass, list);
+            addViewBuffer(vEx, list)
         }
 
     }
 
-    fun addViewBuffer(vi: View, list: ArrayList<ViewEx>) {
-        val vEx = ViewEx.getFromTag(vi);
-        vEx.notNull {
-            if (list.size < maxViewBuffer) {
-                list.add(it);
-            }
+    fun addViewBuffer(vi: CommView, list: ArrayList<CommView>) {
+        if (list.size < maxViewBuffer) {
+            list.add(vi);
         }
     }
 
@@ -161,24 +170,23 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     /**
      * ListView head列表
      */
-    internal val headViewList = ArrayList<ViewEx>();
-    internal val footViewList = ArrayList<ViewEx>();
+    internal val headViewList = ArrayList<CommView>();
+    internal val footViewList = ArrayList<CommView>();
 
-    fun addFooter(view: ViewEx): ListViewEx<ListT> {
+    fun addFooter(view: CommView): ListViewEx<ListT> {
         isListView {
-            it.addFooterView(view.getView())
+            it.addFooterView(view)
         }
 
         _recyclerView.notNull {
             footViewList.add(view);
-            view.getView().layoutParams = RecyclerView.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
+
+            setViewLayout(view)
+
         }
         linearView.notNull {
             footViewList.add(view);
-            it.addView(view.getView())
+            it.addView(view)
         }
         return this
     }
@@ -186,20 +194,19 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     /**
      * 同ListView,向List添加一个head
      */
-    fun addHeader(view: ViewEx): ListViewEx<ListT> {
+    fun addHeader(view: CommView): ListViewEx<ListT> {
         isListView {
-            it.addHeaderView(view.getView())
+            it.addHeaderView(view)
         }
         _recyclerView.notNull {
             headViewList.add(view);
-            view.getView().layoutParams = RecyclerView.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
+
+            setViewLayout(view)
+
         }
         linearView.notNull {
             headViewList.add(view);
-            it.addView(view.getView())
+            it.addView(view)
         }
         return this
     }
@@ -207,16 +214,16 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     /**
      * ListView
      */
-    fun removeFooter(view: ViewEx): ListViewEx<ListT> {
+    fun removeFooter(view: CommView): ListViewEx<ListT> {
         isListView {
-            it.removeFooterView(view.getView())
+            it.removeFooterView(view)
         }
         _recyclerView.notNull {
             footViewList.remove(view)
         }
         linearView.notNull {
             footViewList.remove(view)
-            it.removeView(view.getView())
+            it.removeView(view)
         }
 
         return this
@@ -225,16 +232,16 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     /**
      * 同ListView
      */
-    fun removeHeader(view: ViewEx): ListViewEx<ListT> {
+    fun removeHeader(view: CommView): ListViewEx<ListT> {
         isListView {
-            it.removeHeaderView(view.getView())
+            it.removeHeaderView(view)
         }
         _recyclerView.notNull {
             headViewList.remove(view)
         }
         linearView.notNull {
             headViewList.remove(view)
-            it.removeView(view.getView())
+            it.removeView(view)
         }
         return this
     }
@@ -248,7 +255,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
         }
         linearView.notNull { linear ->
             headViewList.forEach {
-                linear.removeView(it.getView())
+                linear.removeView(it)
             }
             headViewList.clear();
         }
@@ -372,7 +379,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
         return mCont
     }
 
-    private fun showListItem(vi: View?, index: Int): View? {
+    private fun showListItem(vi: CommView?, index: Int): View? {
         try {
 
             val v = run {
@@ -380,37 +387,34 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
                     val type = getViewType(index)
                     onCreateView(type).apply {
                         viewType = type
-                        setViewToTag()
                         listEx = this@ListViewEx;
                     }
                 } else {
-                    vi.tag as ViewEx
+                    vi
                 }
 
                 onBindView(ve, index)
-                ve.getView()
+                ve
             }
 
-            if (v != null) {
-                if (onItemClick != null) {
-                    v.onClick {
-                        onItemClick!!(index, v)
+            if (onItemClick != null) {
+                v.onClick {
+                    onItemClick!!(index, v)
+                }
+            }
+
+            if (onItemLongClick != null) {
+                v.setOnLongClickListener(View.OnLongClickListener {
+                    // TODO Auto-generated method stub
+                    try {
+                        return@OnLongClickListener onItemLongClick!!(index, v)
+                    } catch (e: Exception) {
+                        // TODO Auto-generated catch block
+                        FileExt.logException(e, true)
                     }
-                }
+                    false
+                })
 
-                if (onItemLongClick != null) {
-                    v.setOnLongClickListener(View.OnLongClickListener {
-                        // TODO Auto-generated method stub
-                        try {
-                            return@OnLongClickListener onItemLongClick!!(index, v)
-                        } catch (e: Exception) {
-                            // TODO Auto-generated catch block
-                            FileExt.logException(e, true)
-                        }
-                        false
-                    })
-
-                }
             }
 
             return v
@@ -508,7 +512,7 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
 
     private fun addLinearView(i: Int) {
         parentListBuffer { list, viewCls ->
-            val ve = list.getViewBuffer(viewCls)?.getView();
+            val ve = list.getViewBuffer(viewCls)
             val v = showListItem(ve, i)
             linearView!!.addView(v)
             return
@@ -580,7 +584,14 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     fun del(i: Int) {
         data.removeAt(i)
         linearView.notNull { linearView ->
-            parentListBuffer { list, viewCls -> list.addViewBuffer(linearView.get(i)) }
+            parentListBuffer { list, viewCls ->
+                linearView.getChildAt(i).notNull {
+                    if (it is CommView) {
+                        list.addViewBuffer(it)
+                    }
+                }
+
+            }
             linearView.removeViewAt(i)
         }
         update()
@@ -601,7 +612,11 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
             data.removeAt(i)
             linearView.notNull { linearView ->
                 parentListBuffer { list, viewCls ->
-                    list.addViewBuffer(linearView.get(i))
+                    linearView.getChildAt(i).notNull {
+                        if (it is CommView) {
+                            list.addViewBuffer(it)
+                        }
+                    }
                 }
                 linearView.removeViewAt(i)
             }
@@ -662,7 +677,10 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
      */
     fun update(i: Int) {
         if (linearView != null) {
-            showListItem(linearView!!.getChildAt(i), i)
+            val v = linearView!!.getChildAt(i)
+            if (v is CommView) {
+                showListItem(v, i)
+            }
         }
         update()
     }
@@ -674,7 +692,10 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
         data[i] = dat
 
         if (linearView != null) {
-            showListItem(linearView!!.getChildAt(i), i)
+            val v = linearView!!.getChildAt(i)
+            if (v is CommView) {
+                showListItem(v, i)
+            }
         }
         update()
     }
@@ -687,7 +708,10 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
 
         if (linearView != null) {
             data.forEachIndexed { index, listT ->
-                showListItem(linearView!!.getChildAt(index), index)
+                val v = linearView!!.getChildAt(index)
+                if (v is CommView) {
+                    showListItem(v, index)
+                }
             }
 
         }
@@ -702,13 +726,12 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
     var onUpdate = {};
 
 
-    internal fun getViewByType(view: ViewEx, wtype: Int): ViewEx {
+    internal fun getViewByType(view: CommView, wtype: Int): CommView {
         if (view.viewType == wtype)
             return view;
 
         return onCreateView(wtype).apply {
             viewType = wtype;
-            setViewToTag()
             listEx = this@ListViewEx
         }
     }
@@ -718,18 +741,16 @@ open class ListViewEx<ListT>(cont: Context, groupView: ViewGroup, val parentView
             try {
                 val type = getViewType(index);
                 val vi = if (arg1 == null) {
-
-                    onCreateView!!(type).apply {
+                    onCreateView(type).apply {
                         viewType = type;
-                        setViewToTag()
                         listEx = this@ListViewEx
                     }
                 } else {
-                    getViewByType(arg1.tag as ViewEx, type)
+                    getViewByType(arg1 as CommView, type)
                 }
 
                 onBindView(vi, index)
-                return vi.getView()
+                return vi
             } catch (e: Throwable) {
                 FileExt.logException(e, true)
             }

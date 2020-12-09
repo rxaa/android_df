@@ -10,6 +10,13 @@ inline fun <T> List<T>?.forEachDesc(action: (T) -> Unit) {
     }
 }
 
+fun List<String>.toArr(): Array<String> {
+    val arrs = Array<String>(this.size, { i -> "" })
+    for (i in this.indices) {
+        arrs[i] = this[i]
+    }
+    return arrs
+}
 
 fun <T, T2> List<T>.toHashMap(func: (k: T) -> T2): HashMap<T2, T> {
     val map = HashMap<T2, T>()
@@ -42,8 +49,8 @@ inline fun <T> arrayPair(action: PairClass<T>.() -> Unit): ArrayList<Pair<String
  * 用于构造ArrayList<Pair>
  */
 inline fun <T> arrayPairTo(
-        list: ArrayList<Pair<String, T>>,
-        action: PairClass<T>.() -> Unit
+    list: ArrayList<Pair<String, T>>,
+    action: PairClass<T>.() -> Unit
 ): ArrayList<Pair<String, T>> {
     action(PairClass(list));
     return list
@@ -72,7 +79,10 @@ inline fun <T> List<T>?.each(selector: (T) -> Boolean): Boolean {
     return true;
 }
 
-inline fun <T, T1 : Comparable<T1>, T2 : Comparable<T2>> MutableList<T>?.sortBy2(crossinline selector: (T) -> T1, crossinline selector2: (T) -> T2) {
+inline fun <T, T1 : Comparable<T1>, T2 : Comparable<T2>> MutableList<T>?.sortBy2(
+    crossinline selector: (T) -> T1,
+    crossinline selector2: (T) -> T2
+) {
     if (this != null) {
         this.sortWith(Comparator { l, r ->
             val res = selector(l).compareTo(selector(r));
@@ -84,7 +94,10 @@ inline fun <T, T1 : Comparable<T1>, T2 : Comparable<T2>> MutableList<T>?.sortBy2
     }
 }
 
-inline fun <T, T1 : Comparable<T1>, T2 : Comparable<T2>> MutableList<T>?.sortBy2Desc(crossinline selector: (T) -> T1, crossinline selector2: (T) -> T2) {
+inline fun <T, T1 : Comparable<T1>, T2 : Comparable<T2>> MutableList<T>?.sortBy2Desc(
+    crossinline selector: (T) -> T1,
+    crossinline selector2: (T) -> T2
+) {
     if (this != null) {
         this.sortWith(Comparator { l, r ->
             val res = selector(r).compareTo(selector(l));

@@ -12,21 +12,28 @@ fun RecyclerView.update() {
     this.adapter?.notifyDataSetChanged()
 }
 
+
+fun setViewLayout(view: CommView) {
+    if (view.layoutParams == null) {
+        view.layoutParams = RecyclerView.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    }
+}
+
 /**
- * 绑定一个ViewEx
+ * 绑定一个BaseView
  */
 fun RecyclerView.bindView(
     cont: Context,
-    view: ViewEx
+    view: CommView
 ) {
     val adapter = this.adapter ?: kotlin.run {
         initAdapter(this, cont)
     }
-    val lp = RecyclerView.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT,
-        ViewGroup.LayoutParams.WRAP_CONTENT
-    )
-    view.getView().layoutParams = lp
+    setViewLayout(view)
+
     if (adapter is RecybindAdapter) {
         adapter.setOnMove(null)
         adapter.list.add(
@@ -45,7 +52,7 @@ fun RecyclerView.bindView(
 /**
  * 绑定一个List
  */
-fun <T, TV : ViewEx> RecyclerView.bindList(
+fun <T, TV : CommView> RecyclerView.bindList(
     cont: Context,
     list: List<T>,
     onCreate: () -> TV,
@@ -61,7 +68,7 @@ fun <T, TV : ViewEx> RecyclerView.bindList(
             recyvlerData(
                 list as List<Any>,
                 onCreate,
-                onBind as (view: ViewEx, dat: Any, index: Int) -> Unit,
+                onBind as (view: CommView, dat: Any, index: Int) -> Unit,
                 onMove,
                 null
             )
@@ -81,10 +88,10 @@ internal fun initAdapter(re: RecyclerView, cont: Context): RecybindAdapter {
 
 class recyvlerData(
     val list: List<Any>?,
-    val onCreate: () -> ViewEx,
-    val onBind: (view: ViewEx, dat: Any, index: Int) -> Unit,
+    val onCreate: () -> CommView,
+    val onBind: (view: CommView, dat: Any, index: Int) -> Unit,
     val onMove: ((fromPosition: Int, toPosition: Int) -> Unit)?,
-    val view: ViewEx?
+    val view: CommView?
 ) {
     fun size(): Int {
         if (list != null)

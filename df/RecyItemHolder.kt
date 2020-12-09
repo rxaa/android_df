@@ -1,17 +1,12 @@
 package rxaa.df
 
-import android.graphics.Color
 import android.view.ViewGroup
-import org.jetbrains.annotations.NotNull
-import java.util.*
-import java.util.Collections.swap
-import android.graphics.Color.LTGRAY
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 
 
-class RecyItemHolder(val view: ViewEx) : RecyclerView.ViewHolder(view.getView()) {
+class RecyItemHolder(val view: CommView) : RecyclerView.ViewHolder(view) {
 
 
 }
@@ -30,7 +25,10 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
             else if (viewType <= list.footViewType)
                 return RecyItemHolder(list.footViewList[list.footViewType - viewType])
         }
-        val v = list.onCreateView!!(viewType)
+        val v = list.onCreateView(viewType)
+        
+        setViewLayout(v)
+
         v.listEx = list
         return RecyItemHolder(v)
     }
@@ -56,7 +54,7 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
                 list.onBindView(holder.view, index)
                 if (list.onItemClick != null) {
                     holder.view.onClick {
-                        list.onItemClick!!(index, holder.view.getView())
+                        list.onItemClick!!(index, holder.view)
                     }
                 }
             } else {

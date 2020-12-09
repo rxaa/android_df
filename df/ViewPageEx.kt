@@ -113,13 +113,6 @@ class ViewPageEx : ViewPager {
         return this
     }
 
-    @JvmOverloads
-    fun addView(v: ViewEx, onSelected: () -> Unit = {}): ViewPageEx {
-        viewList.add(v.getView())
-        viewSelectList.add(onSelected)
-        init()
-        return this
-    }
 
     /**
      * 触发current view onSelected事件

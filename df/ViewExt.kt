@@ -13,7 +13,6 @@ import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 
 
-
 val Int.resource: String
     get() = df.appContext!!.resources.getString(this);
 
@@ -160,6 +159,27 @@ fun Dialog?.setLocation(x: Int, y: Int, gravity: Int = Gravity.LEFT or Gravity.T
     dialogWindow.setGravity(gravity)
     lp.x = x
     lp.y = y
+}
+
+/**
+ * 设置dialog与View的相对位置
+ */
+fun Dialog?.setLocationToView(
+    v: View,
+    x: Int,
+    y: Int,
+    gravity: Int = Gravity.LEFT or Gravity.TOP
+) {
+    if (this == null)
+        return;
+    val loc = intArrayOf(0, 0)
+    v.getLocationInWindow(loc)
+
+    val dialogWindow = this.window ?: return;
+    val lp = dialogWindow.attributes
+    dialogWindow.setGravity(gravity)
+    lp.x = loc[0] + x
+    lp.y = loc[1] + y
 }
 
 fun android.widget.AdapterView<*>?.onItemClick(cb: (index: Int) -> Unit) {
