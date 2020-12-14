@@ -609,19 +609,22 @@ open class ListViewEx<ListT>(
      * 移除指定范围内元素
      */
     fun removeRange(fromI: Int, toI: Int) {
-        for (i in toI downTo fromI) {
-            data.removeAt(i)
-            linearView.notNull { linearView ->
-                parentListBuffer { list, viewCls ->
+
+        data.subList(fromI, toI).clear()
+        linearView.notNull { linearView ->
+            parentListBuffer { list, viewCls ->
+                for (i in toI downTo fromI) {
                     linearView.getChildAt(i).notNull {
                         if (it is CommView) {
                             list.addViewBuffer(it)
+                            linearView.removeViewAt(i)
                         }
                     }
                 }
-                linearView.removeViewAt(i)
             }
+            //linearView.removeViews(fromI, toI - fromI + 1)
         }
+
         update()
     }
 
