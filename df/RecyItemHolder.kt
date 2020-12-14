@@ -8,7 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 
 class RecyItemHolder(val view: CommView) : RecyclerView.ViewHolder(view) {
 
+    init {
 
+    }
 }
 
 class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder>() {
@@ -26,7 +28,7 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
                 return RecyItemHolder(list.footViewList[list.footViewType - viewType])
         }
         val v = list.onCreateView(viewType)
-        
+
         setViewLayout(v)
 
         v.listEx = list

@@ -113,7 +113,11 @@ object FileExt {
     var writeLogFunc = fun(text: String, file: File): Boolean {
         try {
             if (file.length() > 2 * 1024 * 1024) {
-                file.delete()
+                try {
+                    file.renameTo(file.add(".back"));
+                } catch (e: Exception) {
+                    file.delete();
+                }
             }
 
             file.appendText("------${df.now}------\r\n$text\r\n\r\n")

@@ -85,6 +85,7 @@ open class ListViewEx<ListT>(
      */
     val maxViewBuffer = 10;
 
+
     fun getViewBuffer(clas: Class<*>): CommView? {
         val list = viewBuffer?.get(clas);
         if (list != null && list.size > 0) {

@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.core.view.size
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 
@@ -52,12 +53,12 @@ open class CommView : LinearLayout {
     /**
      * 清除指定的viewGroup,并将其成员View加入缓存
      */
-    open fun clearView(view: ViewGroup) {
+    open fun ViewGroup.clearView() {
         listEx.notNull {
-            it.addViewBuffer(view);
-            view.removeAllViews()
+            it.addViewBuffer(this);
+            this.removeAllViews()
         }.nope {
-            view.removeAllViews()
+            this.removeAllViews()
         }
     }
 
@@ -77,8 +78,8 @@ open class CommView : LinearLayout {
      * newViewFunc为ViewEx构造函数，只有当缓存中未找到该View时，才会重新创建
      *
      */
-    inline fun <reified T : CommView> addView(view: ViewGroup, noinline newViewFunc: () -> T): T {
-        return _addView(view, T::class.java, newViewFunc);
+    inline fun <reified T : CommView> ViewGroup.addView(noinline newViewFunc: () -> T): T {
+        return _addView(this, T::class.java, newViewFunc);
     }
 
     /**
@@ -126,8 +127,7 @@ open class CommView : LinearLayout {
     fun <T : ViewDataBinding> dataBinding(resId: Int): BindViewEx<T> {
 
         inflate(context, resId, this)
-
-        getChildAt(0).notNull {
+        getChildAt(size - 1).notNull {
             inflateView = it;
         }
 

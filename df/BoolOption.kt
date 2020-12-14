@@ -9,7 +9,9 @@ inline fun <T> T?.isNull(f: () -> Unit): Boolean {
     return false
 }
 
+
 inline fun <T> T?.notNull(f: (p: T) -> Unit): Boolean {
+
     if (this != null) {
         f(this)
         return true

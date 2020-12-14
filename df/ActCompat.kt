@@ -129,12 +129,16 @@ open class ActCompat : AppCompatActivity() {
      */
     var isFirst = true;
 
+    var bundleOnCreate: Bundle? = null
+
     final override fun onCreate(savedInstanceState: Bundle?) {
+        bundleOnCreate = savedInstanceState;
         isFirst = true;
         super.onCreate(savedInstanceState)
         ActivityEx.procAct(this)
         if (ActivityEx.isKilled(this))
             return
+
 
         FileExt.catchLog {
 
