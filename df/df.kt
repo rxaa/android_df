@@ -38,6 +38,10 @@ object df {
     @JvmStatic
     var appContext: Context? = null;
 
+    //获取全局context
+    val context: Context
+        get() = appContext!!
+
     /**
      * 当前顶层activity
      */
@@ -255,7 +259,6 @@ object df {
     }
 
 
-
     /**
      * 弹出toast消息
      */
@@ -289,7 +292,6 @@ object df {
     }
 
 
-
     /**
      * 遍历指定类型的所有字段
      */
@@ -313,7 +315,6 @@ object df {
             func(f, i);
         }
     }
-
 
 
     /**
@@ -364,7 +365,6 @@ object df {
     }
 
 
-
     @JvmStatic
     val now: String
         get() {
@@ -386,9 +386,6 @@ object df {
     }
 
 
-
-
-
     fun swapData(datas: List<*>, fromPosition: Int, toPosition: Int) {
         if (fromPosition < toPosition) {
             for (i in fromPosition until toPosition) {
@@ -400,7 +397,6 @@ object df {
             }
         }
     }
-
 
 
     fun numberFix2(num: Long): String {
@@ -546,7 +542,6 @@ object df {
                 conti.resume(false)
             }
         }
-
 
 
     @JvmStatic
