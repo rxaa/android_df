@@ -18,10 +18,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.File
+import java.lang.Runnable
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.*
@@ -56,18 +55,6 @@ object df {
 
     @JvmStatic
     val actStack = ArrayList<Activity>();
-
-
-    /**
-     *  在当前线程启动协程
-     */
-    fun launch(block: suspend () -> Unit) {
-        GlobalScope.launch(Dispatchers.Unconfined) {
-            FileExt.catchLog {
-                block();
-            }
-        }
-    }
 
 
     @JvmStatic
@@ -163,12 +150,37 @@ object df {
         return v?.findViewById(id)
     }
 
+    val mainCoroutineScope = MainScope()
+
+    /**
+     *  在主线程启动协程
+     */
+    fun launchOnMain(block: suspend () -> Unit) {
+        mainCoroutineScope.launch {
+            FileExt.catchLog {
+                block();
+            }
+        }
+    }
+
+    /**
+     * 在当前线程启动协程
+     */
+    fun launch(block: suspend () -> Unit) {
+        mainCoroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            FileExt.catchLog {
+                block();
+            }
+        }
+    }
 
     @JvmStatic
-    fun runOnPool(pool: ExecutorService, func: suspend () -> Unit) {
-        pool.execute({
-            df.launch { func() }
-        })
+    fun runOnPool(pool: ExecutorService, func: () -> Unit) {
+        pool.execute {
+            FileExt.catchLog {
+                func()
+            }
+        }
     }
 
 

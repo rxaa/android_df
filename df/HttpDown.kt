@@ -22,7 +22,7 @@ open class HttpDown {
         /**
          * 在线程池中run
          */
-        fun runPool(func: suspend () -> Unit) {
+        fun runPool(func:  () -> Unit) {
             df.runOnPool(pool, func)
         }
 
