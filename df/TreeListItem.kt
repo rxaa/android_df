@@ -30,7 +30,6 @@ open class TreeList(
         }
 
         recycler.adapter = adapter
-        viewTypeMap.put(maxViewDataSize, this);
 
     }
 
@@ -48,10 +47,6 @@ open class TreeListNode(
     //位于父节点的索引
     var parentI: Int = 0;
 
-    //每个view类型最大支持1百万条数据
-    val maxViewDataSize = 1_000_000;
-
-    var viewType = maxViewDataSize;
 
     //所有子成员的view构造
     var onCreateView: (viewType: Int) -> CommView = {
@@ -100,7 +95,6 @@ open class TreeListNode(
 
 
     private fun countExpand(): Int {
-
         val subList = subList ?: return 0;
         var count = subList.size
         for (n in subList) {
@@ -139,12 +133,22 @@ open class TreeListNode(
         }
     }
 
+    inline fun <ListT, reified ViewT : CommView> bindSubList(
+        list: MutableList<ListT>,
+        noinline onCreate: (viewType: Int) -> ViewT,
+        noinline onBind: (view: ViewT, dat: ListT, index: Int, node: TreeListNode) -> Unit
+    ) {
+        viewClass = ViewT::class.java
+        _bindSubList(list, onCreate, onBind)
+    }
 
-    fun <ListT, ViewT : CommView> bindSubList(
+    fun <ListT, ViewT : CommView> _bindSubList(
         list: MutableList<ListT>,
         onCreate: (viewType: Int) -> ViewT,
         onBind: (view: ViewT, dat: ListT, index: Int, node: TreeListNode) -> Unit
     ) {
+
+        listTree.viewTypeMap.put(ClassId.getId(viewClass), this)
         datas = list;
         onCreateView = onCreate;
         onBindView = onBind as (view: CommView, dat: Any, index: Int, node: TreeListNode) -> Unit;
@@ -185,7 +189,10 @@ class TreeAdapter(val list: TreeList) : RecyclerView.Adapter<RecyItemHolder>() {
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyItemHolder {
-        val v = list.onCreateView(0);
+        val node = list.viewTypeMap.get(viewType)
+            ?: throw java.lang.Exception("can not find view type:" + viewType)
+
+        val v = node.onCreateView(viewType);
 
         setViewLayout(v)
 
@@ -193,19 +200,24 @@ class TreeAdapter(val list: TreeList) : RecyclerView.Adapter<RecyItemHolder>() {
     }
 
     override fun getItemViewType(position: Int): Int {
-        val node = list.displayList.get(position);
-        val parent = node.parent ?: return 0;
+        FileExt.catchLog {
+            val node = list.displayList.get(position);
+            val parent = node.parent ?: return 0;
+            return ClassId.getId(parent.viewClass)
+
+        }
         return 0
     }
 
 
     override fun onBindViewHolder(holder: RecyItemHolder, position: Int) {
+        FileExt.catchLog {
+            val node = list.displayList.get(position);
+            val parent = node.parent ?: return;
+            val dat = parent.datas.get(node.parentI) ?: return;
 
-        val node = list.displayList.get(position);
-        val parent = node.parent ?: return;
-        val dat = parent.datas.get(node.parentI) ?: return;
-
-        parent.onBindView(holder.view, dat, position, node);
+            parent.onBindView(holder.view, dat, position, node);
+        }
 
 
     }
