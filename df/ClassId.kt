@@ -6,6 +6,9 @@ object ClassId {
 
     var classId = 0;
 
+    /**
+     * 获取指定类型对应的唯一id
+     */
     fun getId(c: Class<*>): Int {
         return viewMap.getOrPut(c) {
             ++classId;

@@ -30,6 +30,10 @@ fun View.setPaddingTop(v: Int) {
     this.setPadding(this.paddingLeft, v, this.paddingRight, this.paddingBottom);
 }
 
+fun View.setPaddingLeft(v: Int) {
+    this.setPadding(v, this.paddingTop, this.paddingRight, this.paddingBottom);
+}
+
 fun View.setTopStatusBar() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
         setPaddingTop(this.paddingTop + getContext().getStatusBarHeight());
