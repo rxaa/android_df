@@ -63,7 +63,7 @@ open class TreeListNode(
     internal var parentI: Int = 0;
 
     /**
-     * 获取位于父节点中的索引
+     * 获取位于父节点中datas的索引
      */
     fun indexInParent(): Int {
         return parentI
@@ -90,13 +90,14 @@ open class TreeListNode(
         }
     }
 
-    fun doRotate(v: View){
+    fun doRotate(v: View) {
         if (isFold) {
-            Animator(v).rotation(90f,300).start()
-        }else{
-            Animator(v).rotation(00f,300).start()
+            Animator(v).rotation(90f, 300).start()
+        } else {
+            Animator(v).rotation(00f, 300).start()
         }
     }
+
     //所有子成员的view构造
     internal var onCreateView: (viewType: Int) -> CommView = {
         throw Exception("Can not find onCreateView")
@@ -117,12 +118,12 @@ open class TreeListNode(
     /**
      * 子节点列表
      */
-    var subList: MutableList<TreeListNode>? = null
+    internal var subList: MutableList<TreeListNode>? = null
 
     /**
      * 多种类型view集合
      */
-    var typeViewList: ArrayList<TreeRecyvlerData>? = null;
+    internal var typeViewList: ArrayList<TreeRecyvlerData>? = null;
 
 
     val isLoad: Boolean
@@ -241,6 +242,23 @@ open class TreeListNode(
         _bindSubList(list, onCreate, onBind)
     }
 
+    fun bindSubView(view: CommView) {
+
+        val list = subList ?: ArrayList<TreeListNode>().also {
+            subList = it;
+        }
+        val node = TreeListNode(
+            this,
+            leftPadding + 1,
+        )
+        node.listTree = listTree
+        node.parentI = -1;
+
+        list.add(node)
+
+        if (parent == null)
+            listTree.displayList.add(node);
+    }
 
     fun <ListT, ViewT : CommView> _bindSubList(
         list: MutableList<ListT>,

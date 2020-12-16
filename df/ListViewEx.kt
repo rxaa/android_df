@@ -66,7 +66,7 @@ open class ListViewEx<ListT>(
     var onItemLongClick: ((index: Int, vi: View) -> Boolean)? = null
 
 
-    var enableAnimation = true
+    var enableAnimation = false
     var defaultViewClass: Class<*>? = null;
 
     internal var listView: AbsListView? = null
