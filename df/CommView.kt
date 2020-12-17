@@ -119,21 +119,18 @@ open class CommView : LinearLayout {
             }
     }
 
-    private lateinit var inflateView: View;
+     lateinit var inflateView: View;
 
     /**
      *  通过resId创建view并返回其关联的binding.
      */
-    fun <T> dataBinding(resId: Int, v: Class<*>): BindViewEx<T> {
-
-
+    inline fun <reified T> dataBinding(resId: Int): BindViewEx<T> {
         inflate(context, resId, this)
         getChildAt(size - 1).notNull {
             inflateView = it;
         }
-
         return BindViewEx {
-            val m = v.getDeclaredMethod("bind", View::class.java)
+            val m = T::class.java.getDeclaredMethod("bind", View::class.java)
             m.invoke(null, inflateView) as T
             // DataBindingUtil.bind<T>(inflateView)!!
         }
