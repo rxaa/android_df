@@ -4,12 +4,11 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.core.view.size
-import androidx.databinding.DataBindingUtil
-import androidx.databinding.ViewDataBinding
 
 
 /**
@@ -23,6 +22,7 @@ open class CommView : LinearLayout {
         attrs,
         defStyleAttr
     ) {
+
         // TODO Auto-generated constructor stub
     }
 
@@ -124,7 +124,8 @@ open class CommView : LinearLayout {
     /**
      *  通过resId创建view并返回其关联的binding.
      */
-    fun <T : ViewDataBinding> dataBinding(resId: Int): BindViewEx<T> {
+    fun <T> dataBinding(resId: Int, v: Class<*>): BindViewEx<T> {
+
 
         inflate(context, resId, this)
         getChildAt(size - 1).notNull {
@@ -132,9 +133,9 @@ open class CommView : LinearLayout {
         }
 
         return BindViewEx {
-            DataBindingUtil.bind<T>(
-                inflateView
-            )!!
+            val m = v.getDeclaredMethod("bind", View::class.java)
+            m.invoke(null, inflateView) as T
+            // DataBindingUtil.bind<T>(inflateView)!!
         }
     }
 

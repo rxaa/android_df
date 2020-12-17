@@ -1,15 +1,13 @@
 package rxaa.df
 
 import android.R
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
-import androidx.databinding.ViewDataBinding
 import java.util.*
 
 
@@ -97,8 +95,33 @@ open class ActCompat : AppCompatActivity() {
     /**
      * Set the Activity's content view to the given layout and return the associated binding.
      */
-    fun <T : ViewDataBinding> dataBinding(resId: Int): BindView<T> {
-        return BindView({ DataBindingUtil.setContentView<T>(this, resId)!! }, createList);
+    inline fun <reified T> dataBinding(resId: Int, v: Class<T>): BindView<T> {
+
+        return BindView({
+
+            val m = v.getDeclaredMethod("inflate", LayoutInflater::class.java)
+            val b = m.invoke(null, layoutInflater) as T;
+
+            val getR = v.methods
+            for (method in getR) {
+                if (method.returnType == View::class.java) {
+                    val v = method.invoke(b) as View
+                    setContentView(v)
+                    break;
+                }
+            }
+
+//            if (getR[4].returnType == View::class.java) {
+//
+//            }
+//            val rm = v.getMethod("getRoot", View::class.java);
+//            val vi = b.root
+//
+//
+//            setContentView(vi)
+            b
+            // DataBindingUtil.setContentView<T>(this, resId)!!
+        }, createList);
     }
 
 
