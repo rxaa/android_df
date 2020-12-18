@@ -99,7 +99,7 @@ open class ActCompat : AppCompatActivity() {
 
         return BindView({
 
-            val v = LayoutInflater.from(getContext()).inflate(resId, null)
+            val v = LayoutInflater.from(this).inflate(resId, null)
             setContentView(v)
             //为同时兼容viewBinding与dataBinding，这里反射获取bind方法
             val m = T::class.java.getDeclaredMethod("bind", View::class.java)
