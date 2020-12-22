@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.SparseArray
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -78,11 +79,27 @@ open class ActivityEx : Activity() {
 
     val createList = ArrayList<() -> Unit>();
 
+
+    /**
+     * 延迟加载(在onCreate之后调用)
+     */
+    fun <T> create(func: () -> T): BindView<T> {
+        return BindView(func, createList);
+    }
+
     /**
      * 在setContentView之后调用,绑定view对象
      */
     fun <T> bind(func: () -> T): BindView<T> {
         return BindView(func, bindList);
+    }
+
+
+    /**
+     * Set the Activity's content view to the given layout and return the associated binding.
+     */
+    inline fun <reified T> dataBinding(resId: Int): BindView<T> {
+        return _dataBinding(resId, this, T::class.java, createList)
     }
 
     val renderList = HashMap<View, () -> Unit>();
@@ -221,6 +238,24 @@ open class ActivityEx : Activity() {
             return permissionCode++;
         }
 
+
+        /**
+         * Set the Activity's content view to the given layout and return the associated binding.
+         */
+        fun <T> _dataBinding(
+            resId: Int,
+            act: Activity,
+            clas: Class<T>,
+            createList: ArrayList<() -> Unit>
+        ): BindView<T> {
+            return BindView({
+                val v = LayoutInflater.from(act).inflate(resId, null)
+                act.setContentView(v)
+                //为同时兼容viewBinding与dataBinding，这里反射获取bind方法
+                val m = clas.getDeclaredMethod("bind", View::class.java)
+                m.invoke(null, v) as T
+            }, createList);
+        }
 
         /**
          * 记录activity的初始化函数

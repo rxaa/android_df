@@ -96,38 +96,7 @@ open class ActCompat : AppCompatActivity() {
      * Set the Activity's content view to the given layout and return the associated binding.
      */
     inline fun <reified T> dataBinding(resId: Int): BindView<T> {
-
-        return BindView({
-
-            val v = LayoutInflater.from(getContext()).inflate(resId, null)
-            setContentView(v)
-            //为同时兼容viewBinding与dataBinding，这里反射获取bind方法
-            val m = T::class.java.getDeclaredMethod("bind", View::class.java)
-            m.invoke(null, v) as T
-
-//            val m = v.getDeclaredMethod("inflate", LayoutInflater::class.java)
-//            val b = m.invoke(null, layoutInflater) as T;
-//
-//            val getR = v.methods
-//            for (method in getR) {
-//                if (method.returnType == View::class.java) {
-//                    val v = method.invoke(b) as View
-//                    setContentView(v)
-//                    break;
-//                }
-//            }
-
-//            if (getR[4].returnType == View::class.java) {
-//
-//            }
-//            val rm = v.getMethod("getRoot", View::class.java);
-//            val vi = b.root
-//
-//
-//            setContentView(vi)
-            //b
-            // DataBindingUtil.setContentView<T>(this, resId)!!
-        }, createList);
+        return ActivityEx._dataBinding(resId, this, T::class.java, createList)
     }
 
 
