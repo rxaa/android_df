@@ -2,9 +2,9 @@ package net.rxaa.db
 
 import android.database.Cursor
 import org.json.JSONArray
-import net.rxaa.df.Json
-import net.rxaa.df.df
-import net.rxaa.df.removeLast
+import net.rxaa.util.Json
+import net.rxaa.util.df
+import net.rxaa.ext.removeLast
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 import java.util.*
@@ -561,7 +561,7 @@ class SqlSession<T : Any>(
     public fun cursorToObj(cursor: Cursor): T {
         val obj = classT.newInstance()
         var ex: Exception? = null;
-        for (i in 0..cursor.getColumnCount() - 1) {
+        for (i in 0 until cursor.columnCount) {
             try {
                 val fi = tableData.fields[i]
 

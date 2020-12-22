@@ -3,8 +3,8 @@ package net.rxaa.db
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import net.rxaa.df.FileExt
-import net.rxaa.df.df
+import net.rxaa.ext.FileExt
+import net.rxaa.util.df
 import java.lang.reflect.Field
 import java.util.*
 
