@@ -1,10 +1,10 @@
-package rxaa.db
+package net.rxaa.db
 
 import android.database.Cursor
 import org.json.JSONArray
-import rxaa.df.Json
-import rxaa.df.df
-import rxaa.df.removeLast
+import net.rxaa.df.Json
+import net.rxaa.df.df
+import net.rxaa.df.removeLast
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 import java.util.*

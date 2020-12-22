@@ -1,4 +1,4 @@
-package rxaa.df
+package net.rxaa.df
 
 import android.app.Activity
 import android.app.Dialog
@@ -28,10 +28,6 @@ fun RecyclerView.isScrollBottom(): Boolean {
 
 fun View.setPaddingTop(v: Int) {
     this.setPadding(this.paddingLeft, v, this.paddingRight, this.paddingBottom);
-}
-
-fun View.setPaddingLeft(v: Int) {
-    this.setPadding(v, this.paddingTop, this.paddingRight, this.paddingBottom);
 }
 
 fun View.setTopStatusBar() {

@@ -1,4 +1,4 @@
-package rxaa.df
+package net.rxaa.df
 
 import android.content.Context
 import android.view.View
@@ -66,7 +66,6 @@ open class ListViewEx<ListT>(
     var onItemLongClick: ((index: Int, vi: View) -> Boolean)? = null
 
 
-    var enableAnimation = false
     var defaultViewClass: Class<*>? = null;
 
     internal var listView: AbsListView? = null
@@ -85,7 +84,6 @@ open class ListViewEx<ListT>(
      * view item子view最大缓存数
      */
     val maxViewBuffer = 10;
-
 
     fun getViewBuffer(clas: Class<*>): CommView? {
         val list = viewBuffer?.get(clas);
@@ -610,22 +608,19 @@ open class ListViewEx<ListT>(
      * 移除指定范围内元素
      */
     fun removeRange(fromI: Int, toI: Int) {
-
-        data.subList(fromI, toI).clear()
-        linearView.notNull { linearView ->
-            parentListBuffer { list, viewCls ->
-                for (i in toI downTo fromI) {
+        for (i in toI downTo fromI) {
+            data.removeAt(i)
+            linearView.notNull { linearView ->
+                parentListBuffer { list, viewCls ->
                     linearView.getChildAt(i).notNull {
                         if (it is CommView) {
                             list.addViewBuffer(it)
-                            linearView.removeViewAt(i)
                         }
                     }
                 }
+                linearView.removeViewAt(i)
             }
-            //linearView.removeViews(fromI, toI - fromI + 1)
         }
-
         update()
     }
 

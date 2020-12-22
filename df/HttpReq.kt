@@ -1,4 +1,4 @@
-package rxaa.df
+package net.rxaa.df
 
 import android.app.Activity
 import android.content.Context
@@ -219,7 +219,7 @@ open class HttpReq<T : Any>() {
     /**
      * 发起请求,同步获取结果(阻塞)
      */
-    var request =  {
+    var request = suspend {
         isCancel()
         //拼接get url参数
         if (!isPost) {
@@ -283,7 +283,7 @@ open class HttpReq<T : Any>() {
     /**
      * 捕获到异常回调,(运行于线程池,优先于failFun)
      */
-    var onFailed:  (e: Throwable) -> Unit = { e: Throwable -> }
+    var onFailed: suspend (e: Throwable) -> Unit = { e: Throwable -> }
 
     private fun getPool() = if (postMultipartFunc != null)
         poolUpload

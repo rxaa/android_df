@@ -1,4 +1,4 @@
-package rxaa.df
+package net.rxaa.df
 
 import android.app.Dialog
 import android.content.Context
@@ -126,7 +126,7 @@ open class CommView : LinearLayout {
      */
     inline fun <reified T> dataBinding(resId: Int): BindViewEx<T> {
         inflate(context, resId, this)
-        getChildAt(size - 1).notNull {
+        getChildAt(childCount - 1).notNull {
             inflateView = it;
         }
         return BindViewEx {

@@ -1,4 +1,4 @@
-package rxaa.df
+package net.rxaa.df
 
 import kotlin.annotation.AnnotationRetention.*
 import kotlin.reflect.KClass

@@ -1,4 +1,4 @@
-package rxaa.df
+package net.rxaa.df
 
 import android.app.Activity
 import android.content.Context
@@ -22,7 +22,7 @@ open class HttpDown {
         /**
          * 在线程池中run
          */
-        fun runPool(func:  () -> Unit) {
+        fun runPool(func: suspend () -> Unit) {
             df.runOnPool(pool, func)
         }
 

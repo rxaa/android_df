@@ -1,4 +1,4 @@
-package rxaa.df
+package net.rxaa.df
 
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities

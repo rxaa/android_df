@@ -1,10 +1,10 @@
-package rxaa.db
+package net.rxaa.db
 
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import rxaa.df.FileExt
-import rxaa.df.df
+import net.rxaa.df.FileExt
+import net.rxaa.df.df
 import java.lang.reflect.Field
 import java.util.*
 

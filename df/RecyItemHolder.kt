@@ -1,7 +1,6 @@
-package rxaa.df
+package net.rxaa.df
 
 import android.view.ViewGroup
-import android.view.animation.LinearInterpolator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -9,9 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class RecyItemHolder(val view: CommView) : RecyclerView.ViewHolder(view) {
 
-    init {
 
-    }
 }
 
 class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder>() {
@@ -29,7 +26,7 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
                 return RecyItemHolder(list.footViewList[list.footViewType - viewType])
         }
         val v = list.onCreateView(viewType)
-
+        
         setViewLayout(v)
 
         v.listEx = list
@@ -62,39 +59,6 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
                 }
             } else {
 
-            }
-        }
-    }
-
-
-    private val mInterpolator = LinearInterpolator()
-
-    override fun onViewAttachedToWindow(holder: RecyItemHolder) {
-        super.onViewAttachedToWindow(holder)
-        addAnimation(holder)
-    }
-
-    private var mLastPosition = -1
-
-    /**
-     * 动画类型
-     */
-    private val mSelectAnimation: BaseAnimation = ScaleInAnimation()
-
-    /**
-     * 加载动画
-     *
-     * @param holder
-     */
-    private fun addAnimation(holder: RecyItemHolder) {
-        if (list.enableAnimation) {
-            if (holder.layoutPosition > mLastPosition) {
-                val animation = mSelectAnimation
-                for (anim in animation.getAnimators(holder.itemView)) {
-                    anim.setDuration(300).start()
-                    anim.interpolator = mInterpolator
-                }
-                mLastPosition = holder.layoutPosition
             }
         }
     }

@@ -1,4 +1,4 @@
-package rxaa.db
+package net.rxaa.db
 
 interface ISqlJoin {
 

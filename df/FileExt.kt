@@ -1,4 +1,4 @@
-package rxaa.df
+package net.rxaa.df
 
 import android.content.Context
 import android.content.Intent

@@ -1,4 +1,4 @@
-package rxaa.df
+package net.rxaa.df
 
 class BindView<out T>(func: () -> T, binds: MutableList<() -> Unit>) : Lazy<T> {
     init {
