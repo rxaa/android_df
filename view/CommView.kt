@@ -1,15 +1,18 @@
 package net.rxaa.view
 
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import net.rxaa.ext.nope
 import net.rxaa.ext.notNull
 import net.rxaa.ext.FileExt
+import java.util.ArrayList
 
 
 /**
@@ -122,25 +125,20 @@ open class CommView : LinearLayout {
 
      lateinit var inflateView: View;
 
+
     /**
-     *  通过resId创建view并返回其关联的binding.
+     * Set the View's content view to the given layout and return the associated binding.
      */
-    inline fun <reified T> dataBinding(resId: Int): BindViewEx<T> {
+    fun <T> binding(
+        resId: Int,
+        func: (v: View) -> T,
+    ): BindViewEx<T> {
         inflate(context, resId, this)
         getChildAt(childCount - 1).notNull {
             inflateView = it;
         }
         return BindViewEx {
-            //为同时兼容viewBinding与dataBinding，这里反射获取bind方法
-            val ms = T::class.java.declaredMethods
-            for (m in ms) {
-                if (m.parameterTypes.size == 1 && m.parameterTypes[0] == View::class.java && m.returnType == T::class.java) {
-                    return@BindViewEx m.invoke(null, inflateView) as T
-                }
-            }
-            val m = T::class.java.getDeclaredMethod("bind", View::class.java)
-            m.invoke(null, inflateView) as T
-            // DataBindingUtil.bind<T>(inflateView)!!
+            func(inflateView)
         }
     }
 

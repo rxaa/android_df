@@ -12,8 +12,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
-import androidx.databinding.DataBindingUtil
-import androidx.viewbinding.ViewBinding
 import net.rxaa.util.*
 import net.rxaa.ext.FileExt
 import net.rxaa.ext.notNull
