@@ -132,6 +132,12 @@ open class CommView : LinearLayout {
         }
         return BindViewEx {
             //为同时兼容viewBinding与dataBinding，这里反射获取bind方法
+            val ms = T::class.java.declaredMethods
+            for (m in ms) {
+                if (m.parameterTypes.size == 1 && m.parameterTypes[0] == View::class.java && m.returnType == T::class.java) {
+                    return@BindViewEx m.invoke(null, inflateView) as T
+                }
+            }
             val m = T::class.java.getDeclaredMethod("bind", View::class.java)
             m.invoke(null, inflateView) as T
             // DataBindingUtil.bind<T>(inflateView)!!

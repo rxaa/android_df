@@ -3,6 +3,7 @@ package net.rxaa.view
 import android.R
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -67,28 +68,20 @@ open class ActCompat : AppCompatActivity() {
     override fun setContentView(layoutResID: Int) {
         super.setContentView(layoutResID)
 
-        FileExt.catchLog { bindList.forEach { it() } }
-
     }
 
     override fun setContentView(view: View?) {
         super.setContentView(view)
-        FileExt.catchLog { bindList.forEach { it() } }
     }
 
     override fun setContentView(view: View?, params: ViewGroup.LayoutParams?) {
         super.setContentView(view, params)
-        FileExt.catchLog { bindList.forEach { it() } }
     }
 
     fun getContext(): ActCompat {
         return this
     }
 
-    /**
-     * 绑定的view
-     */
-    val bindList = ArrayList<() -> Unit>();
 
     val createList = ArrayList<() -> Unit>();
 
@@ -96,17 +89,10 @@ open class ActCompat : AppCompatActivity() {
     /**
      * Set the Activity's content view to the given layout and return the associated binding.
      */
-    inline fun <reified T> dataBinding(resId: Int): BindView<T> {
-        return ActivityEx._dataBinding(resId, this, T::class.java, createList)
+    fun <T> binding(resId: Int, func: (v: View) -> T): BindView<T> {
+        return ActivityEx.binding(resId, this, func, createList)
     }
 
-
-    /**
-     * 在setContentView之后调用,绑定view对象
-     */
-    fun <T> bind(func: () -> T): BindView<T> {
-        return BindView(func, bindList);
-    }
 
     /**
      * 延迟加载(在onCreate之后调用)

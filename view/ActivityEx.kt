@@ -12,6 +12,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import androidx.databinding.DataBindingUtil
+import androidx.viewbinding.ViewBinding
 import net.rxaa.util.*
 import net.rxaa.ext.FileExt
 import net.rxaa.ext.notNull
@@ -102,8 +104,8 @@ open class ActivityEx : Activity() {
     /**
      * Set the Activity's content view to the given layout and return the associated binding.
      */
-    inline fun <reified T> dataBinding(resId: Int): BindView<T> {
-        return _dataBinding(resId, this, T::class.java, createList)
+    fun <T> binding(resId: Int, func: (v: View) -> T): BindView<T> {
+        return ActivityEx.binding(resId, this, func, createList)
     }
 
     val renderList = HashMap<View, () -> Unit>();
@@ -246,18 +248,16 @@ open class ActivityEx : Activity() {
         /**
          * Set the Activity's content view to the given layout and return the associated binding.
          */
-        fun <T> _dataBinding(
+        fun <T> binding(
             resId: Int,
             act: Activity,
-            clas: Class<T>,
+            func: (v: View) -> T,
             createList: ArrayList<() -> Unit>
         ): BindView<T> {
             return BindView({
                 val v = LayoutInflater.from(act).inflate(resId, null)
                 act.setContentView(v)
-                //为同时兼容viewBinding与dataBinding，这里反射获取bind方法
-                val m = clas.getDeclaredMethod("bind", View::class.java)
-                m.invoke(null, v) as T
+                func(v)
             }, createList);
         }
 
