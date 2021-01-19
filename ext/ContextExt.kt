@@ -1,5 +1,6 @@
 package net.rxaa.ext
 
+import android.app.Activity
 import android.app.Service
 import android.content.Context
 import android.graphics.Color
@@ -45,12 +46,35 @@ fun Context.getTelephonyManager(): TelephonyManager {
  */
 fun Context.getStatusBarHeight(): Int {
     var result = 0;
-    val resourceId = this.getResources().getIdentifier("status_bar_height", "dimen",
-            "android");
+    val resourceId = this.getResources().getIdentifier(
+        "status_bar_height", "dimen",
+        "android"
+    );
     if (resourceId > 0) {
         result = this.getResources().getDimensionPixelSize(resourceId);
     }
     return result;
+}
+
+
+fun Activity.statusBarColor(color: Int) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        this.window.statusBarColor = color;
+        this.window.navigationBarColor = color;
+    }
+}
+
+/**
+ * 亮色背景，黑色图标
+ */
+fun Activity.statusBarLight() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        window.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        window.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+    }
 }
 
 /**
@@ -59,7 +83,8 @@ fun Context.getStatusBarHeight(): Int {
 fun Window.statusBarTransparent() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         this.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-        this.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+        this.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
         this.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         this.statusBarColor = Color.TRANSPARENT;
         this.navigationBarColor = Color.TRANSPARENT;

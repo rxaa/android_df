@@ -16,6 +16,7 @@ import net.rxaa.util.*
 import net.rxaa.ext.FileExt
 import net.rxaa.ext.notNull
 import net.rxaa.media.Pic
+import java.io.Serializable
 import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -216,18 +217,6 @@ open class ActivityEx : Activity() {
 
     var preDraw: ViewTreeObserver.OnPreDrawListener? = null
 
-//    /**
-//     * 初始化intent参数中包含引用类型object（无法序列化，内存不足时会重启activity清理掉所有全局变量，只保留intentExtra）
-//     *  为true时将在检测到object被清理掉后自动关闭activity
-//     */
-//    var hasObjectIntentPara = false
-
-    val stringExtra = StringExtra(this)
-    val shortExtra = ShortExtra(this)
-    val intExtra = IntExtra(this)
-    val longExtra = LongExtra(this)
-    val floatExtra = FloatExtra(this)
-    val doubleExtra = DoubleExtra(this)
 
     companion object {
 
@@ -242,6 +231,29 @@ open class ActivityEx : Activity() {
             return permissionCode++;
         }
 
+        val actReqCode = 17654;
+        val actResCode = 17653;
+        val intentParaStr = "para_udu81276"
+        val intentRetStr = "ret_udu83276"
+
+
+
+
+
+        /**
+         * 新建Intent并传参,func回调函数在setContentView之前调用,不要在此访问界面View
+         */
+        @JvmStatic
+        inline fun <reified T : Activity> newIntent(
+            cont: Context?,
+            crossinline func: (T) -> Unit
+        ): Intent {
+            val inte = Intent(cont, T::class.java)
+            addIntentPara(inte) { act ->
+                func(act as T)
+            }
+            return inte
+        }
 
         /**
          * Set the Activity's content view to the given layout and return the associated binding.
@@ -298,11 +310,12 @@ open class ActivityEx : Activity() {
             }
         }
 
+
+
         fun onActivityResult(
             act: Activity, requestCode: Int,
             resultCode: Int, data: Intent?
         ) {
-
 
             if (requestCode == Pic.getFileTag) {
                 if (data == null)
@@ -359,20 +372,6 @@ open class ActivityEx : Activity() {
             }
         }
 
-        /**
-         * 新建Intent并传参,func回调函数在setContentView之前调用,不要在此访问界面View
-         */
-        @JvmStatic
-        inline fun <reified T : Activity> newIntent(
-            cont: Context?,
-            crossinline func: (T) -> Unit
-        ): Intent {
-            val inte = Intent(cont, T::class.java)
-            addIntentPara(inte) { act ->
-                func(act as T)
-            }
-            return inte
-        }
 
         @JvmStatic
         fun <T : Activity> createIntent(cont: Context, clas: Class<T>, func: Func1<T>): Intent {

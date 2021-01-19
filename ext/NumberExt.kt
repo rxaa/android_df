@@ -10,6 +10,13 @@ fun Int.dp2px(): Int {
 }
 
 
+fun Long.toTime(): String {
+    val hour = (this / 1000) / 3600;
+    val minute = (this / 1000) / 60;
+    val sec = (this / 1000) % 60;
+    return hour.to2String() + ":" + minute.to2String() + ":" + sec.to2String();
+}
+
 /**
  * 转换为带单位的字节大小
  */
@@ -40,6 +47,12 @@ fun Int.toByteString(): String {
  * 转换为至少两位字串
  */
 fun Int.to2String(): String {
+    if (this < 10)
+        return "0" + this
+    return this.toString();
+}
+
+fun Long.to2String(): String {
     if (this < 10)
         return "0" + this
     return this.toString();

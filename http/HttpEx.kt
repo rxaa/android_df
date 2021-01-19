@@ -38,7 +38,7 @@ class MultipartForm(val con: HttpURLConnection, val FixedLength: Boolean = true)
     internal fun setSendBufSize() {
         try {
             //https delegate
-            if(con is HttpsURLConnection){
+            if (con is HttpsURLConnection) {
                 con.setDoOutput(true);
                 con.setChunkedStreamingMode(0);
                 return
@@ -71,14 +71,16 @@ class MultipartForm(val con: HttpURLConnection, val FixedLength: Boolean = true)
 
     internal val textList = ArrayList<ByteArray>();
     var textStr = "";
-    internal val fileList = ArrayList<Triple<ByteArray, File, (transferSize: Long, fileSize: Long) -> Unit>>();
+    internal val fileList =
+        ArrayList<Triple<ByteArray, File, (transferSize: Long, fileSize: Long) -> Unit>>();
 
     /**
      * 添加字符串字段
      */
     fun addText(name: String, value: String) {
         textStr += "$name=$value, "
-        val text = "--$boundary\r\nContent-Disposition: form-data; name=\"$name\"\r\n\r\n$value\r\n".toByteArray()
+        val text =
+            "--$boundary\r\nContent-Disposition: form-data; name=\"$name\"\r\n\r\n$value\r\n".toByteArray()
 
         textList.add(text);
 
@@ -89,12 +91,12 @@ class MultipartForm(val con: HttpURLConnection, val FixedLength: Boolean = true)
      * 添加文件字段
      */
     fun addFile(
-        name: String, file: File
-        , prog: (transferSize: Long, fileSize: Long) -> Unit = { t, l -> }
+        name: String, file: File, prog: (transferSize: Long, fileSize: Long) -> Unit = { t, l -> }
     ) {
 
-        val text = ("--$boundary\r\nContent-Disposition: form-data; name=\"$name\"; filename=\"${file.name}\"\r\n" +
-                "Content-Transfer-Encoding: binary\r\n\r\n").toByteArray()
+        val text =
+            ("--$boundary\r\nContent-Disposition: form-data; name=\"$name\"; filename=\"${file.name}\"\r\n" +
+                    "Content-Transfer-Encoding: binary\r\n\r\n").toByteArray()
 
         fileList.add(Triple(text, file, prog));
 
@@ -232,7 +234,10 @@ class HttpEx(val url: String, timeOut: Int = 15 * 1000) {
     fun postMultipart(cont: (form: MultipartForm) -> Unit): MultipartForm {
         conn.requestMethod = "POST"
         conn.setRequestProperty("Charset", charset);
-        conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + MultipartForm.boundary);
+        conn.setRequestProperty(
+            "Content-Type",
+            "multipart/form-data; boundary=" + MultipartForm.boundary
+        );
         val mul = MultipartForm(conn)
 
         cont(mul)
@@ -442,9 +447,9 @@ class HttpEx(val url: String, timeOut: Int = 15 * 1000) {
         }
 
         @JvmStatic
-        fun loadX509(content: Context?, file: String): SSLContext? {
+        fun loadX509(content: Context, file: String): SSLContext? {
             //getAssets().open("load-der.crt");
-            return loadX509(content!!.assets.open(file))
+            return loadX509(content.assets.open(file))
         }
 
 

@@ -10,10 +10,24 @@ import android.view.ViewTreeObserver
 import androidx.appcompat.app.AppCompatActivity
 import net.rxaa.util.*
 import net.rxaa.ext.FileExt
+import java.io.Serializable
 import java.util.*
 
 
-open class ActCompat : AppCompatActivity() {
+class ActCompatCompanion<ParaT, RetT> {
+    fun newIntent(para: ParaT, func: (res: RetT) -> Unit) {
+
+    }
+}
+
+/**
+ *  公共基activity
+ *  ParaT, RetT 分别表示入参类型与返回值类型
+ */
+@Suppress("UNCHECKED_CAST")
+open class ActCompat<ParaT : Serializable, RetT : Serializable> : AppCompatActivity() {
+
+
     @Throws(Exception::class)
     open fun onCreateEx() {
     }
@@ -32,6 +46,13 @@ open class ActCompat : AppCompatActivity() {
 
     @Throws(Exception::class)
     open fun onResumeEx() {
+    }
+
+    /**
+     *  在当前线程启动协程
+     */
+    fun launch(func: suspend () -> Unit) {
+        df.launch(func)
     }
 
     /**
@@ -78,7 +99,7 @@ open class ActCompat : AppCompatActivity() {
         super.setContentView(view, params)
     }
 
-    fun getContext(): ActCompat {
+    fun getContext(): ActCompat<ParaT, RetT> {
         return this
     }
 
@@ -108,6 +129,34 @@ open class ActCompat : AppCompatActivity() {
     fun disableKilled() {
         this.intent.putExtra(ActivityEx.allowKilledStr, true);
     }
+
+    /**
+     * 获取activity 入参
+     */
+    val para: ParaT?
+        get() {
+            return intent.getSerializableExtra(ActivityEx.intentParaStr) as ParaT?
+        }
+
+
+    /**
+     * 设置activity onResult的返回值
+     */
+    private var _result: RetT? = null
+    var result: RetT?
+        get() {
+            return _result
+        }
+        set(value) {
+            _result = value
+            if (value != null) {
+                val intent = Intent()
+                intent.putExtra(ActivityEx.intentRetStr, value as Serializable)
+                setResult(ActivityEx.actResCode, intent)
+            } else {
+                setResult(ActivityEx.actResCode, null)
+            }
+        }
 
     /**
      * 是否为onCreate第一次触发

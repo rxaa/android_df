@@ -87,25 +87,25 @@ val <T : View> T.gone: T
     }
 
 fun <T : View> T.onClick(cb: suspend (v: T) -> Unit): T {
-    this.setOnClickListener({ v ->
+    this.setOnClickListener { _ ->
         df.launch {
             cb(this)
         }
-    })
+    }
     return this
 }
 
 fun <T : View> T.onLongClick(cb: suspend (v: T) -> Unit): T {
-    this.setOnLongClickListener({ v ->
+    this.setOnLongClickListener { v ->
         df.launch { cb(this) }
         return@setOnLongClickListener true;
-    })
+    }
     return this
 }
 
 
 fun <T : View> T.onTouch(cb: (event: MotionEvent) -> Boolean): T {
-    this.setOnTouchListener { view, motionEvent ->
+    this.setOnTouchListener { _, motionEvent ->
         FileExt.catchLog { return@setOnTouchListener cb(motionEvent) }
         false
     }

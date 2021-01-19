@@ -149,7 +149,7 @@ object FileExt {
     @JvmOverloads
     fun logException(arg1: Throwable, msgDialog: Boolean = true, msg: String = "") {
         Log.e("wwwwwwwwwwwwww" + msg, "error", arg1)
-       writeLog(msg + "--------\r\n" + df.getStackTraceInfo(arg1))
+        writeLog(msg + "--------\r\n" + df.getStackTraceInfo(arg1))
         if (msgDialog) {
             if (arg1 is MsgException) {
                 if (arg1.showAble)
@@ -220,7 +220,10 @@ object FileExt {
         arrayOf(".png", "image/png"),
         arrayOf(".pps", "application/vnd.ms-powerpoint"),
         arrayOf(".ppt", "application/vnd.ms-powerpoint"),
-        arrayOf(".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+        arrayOf(
+            ".pptx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        ),
         arrayOf(".prop", "text/plain"),
         arrayOf(".rc", "text/plain"),
         arrayOf(".rmvb", "audio/x-pn-realaudio"),
@@ -263,12 +266,13 @@ object FileExt {
         return type
     }
 
-    fun getFileUri(file:File): Uri? {
+    var fileProviderName = ".file_provider"
+    fun getFileUri(file: File): Uri? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             //7.0获取存储文件的uri
             return FileProvider.getUriForFile(
-                df.appContext!!,
-                df.appContext!!.packageName + ".fileprovider",
+                df.context,
+                df.appContext!!.packageName + fileProviderName,
                 file
             );
         } else {
@@ -376,7 +380,7 @@ object FileExt {
     @JvmStatic
     fun suffixIsPic(suff: String): Boolean {
         if (suff == "jpg" || suff == "jpeg" || suff == "png"
-            || suff == "bmp" || suff == "gif" || suff == "tif"|| suff == "webp"
+            || suff == "bmp" || suff == "gif" || suff == "tif" || suff == "webp"
         )
             return true
 

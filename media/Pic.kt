@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable
 import android.media.ExifInterface
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
@@ -665,7 +666,7 @@ object Pic {
     fun cropImageFile(act: Activity, outX: Int, outY: Int, imageFile: String, res: Func1<String>) {
         try {
             val intent = Intent("com.android.camera.action.CROP")
-            intent.setDataAndType(Uri.fromFile(File(imageFile)), "image/*")
+            intent.setDataAndType(FileExt.getFileUri(File(imageFile)), "image/*")
             intent.putExtra("crop", "true")
             //长宽比
             intent.putExtra("aspectX", 1)
@@ -674,8 +675,12 @@ object Pic {
             intent.putExtra("outputY", outY)
             intent.putExtra("return-json", false)
             intent.putExtra("noFaceDetection", true) // no face detection
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, FileExt.getFileUri(cropFile))
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, cropFile)
             intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString())
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
+
             // 新参数
 
             getFileTable = res
@@ -710,6 +715,9 @@ object Pic {
             intent.putExtra("noFaceDetection", true) // no face detection
             intent.putExtra(MediaStore.EXTRA_OUTPUT, FileExt.getFileUri(cropFile))
             intent.putExtra("outputFormat", Bitmap.CompressFormat.PNG.toString())
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
             // 新参数
 
             getFileTable = res

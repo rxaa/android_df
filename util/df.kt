@@ -33,6 +33,10 @@ object df {
     @JvmStatic
     var appContext: Context? = null;
 
+
+    val context: Context
+        get() = appContext!!
+
     /**
      * 当前顶层activity
      */

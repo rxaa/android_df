@@ -5,14 +5,15 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.util.AttributeSet
-import android.view.LayoutInflater
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.PopupWindow
+import net.rxaa.ext.FileExt
 import net.rxaa.ext.nope
 import net.rxaa.ext.notNull
-import net.rxaa.ext.FileExt
-import java.util.ArrayList
+import net.rxaa.util.df
 
 
 /**
@@ -53,6 +54,12 @@ open class CommView : LinearLayout {
 
     internal var viewType = 0;
 
+    /**
+     *  在当前线程启动协程
+     */
+    fun launch(func: suspend () -> Unit) {
+        df.launch(func)
+    }
 
     /**
      * 清除指定的viewGroup,并将其成员View加入缓存
@@ -71,6 +78,15 @@ open class CommView : LinearLayout {
      */
     open fun onScroll() {
 
+    }
+
+    /**
+     *
+     */
+    fun <T> create(func: () -> T): BindViewEx<T> {
+        return BindViewEx {
+            func()
+        }
     }
 
     fun <T : View> find(id: Int): T {
@@ -123,7 +139,7 @@ open class CommView : LinearLayout {
             }
     }
 
-     lateinit var inflateView: View;
+    lateinit var inflateView: View;
 
 
     /**
@@ -161,11 +177,52 @@ open class CommView : LinearLayout {
         }
     }
 
+    fun requireContext(): Context {
+        return context!!
+    }
+
+
+    private var mPopup: PopupWindow? = null
+
+    open fun showAsPopUp(
+        view: View,
+        x: Int,
+        y: Int,
+        gravity: Int = Gravity.LEFT or Gravity.TOP,
+        cancelAble: Boolean = true,
+        onPreShow: (dialog: PopupWindow) -> Unit = {}
+    ) {
+        mPopup = PopupWindow(context).also { mPopup ->
+            // 设置pop获取焦点，如果为false点击返回按钮会退出当前Activity，如果pop中有Editor的话，focusable必须要为true\
+            mPopup.contentView = this;
+            //mPopup.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT)
+            // mPopup.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
+            mPopup.setBackgroundDrawable(null)
+            mPopup.setFocusable(true)
+            // 设置pop可点击，为false点击事件无效，默认为true
+            mPopup.setTouchable(true)
+            // 设置点击pop外侧消失，默认为false；在focusable为true时点击外侧始终消失
+            mPopup.setOutsideTouchable(cancelAble)
+            onPreShow(mPopup);
+
+            val loc = intArrayOf(0, 0)
+            view.getLocationInWindow(loc)
+            mPopup.showAtLocation(
+                view,
+                gravity,
+                x + loc[0],
+                y + loc[1],
+            )
+        }
+
+
+    }
 
     /**
      * 将此视图作为弹出框显示
      */
     open fun showAsDialog(
+        act: Activity,
         onClose: () -> Unit = {},
         cancelAble: Boolean = true,
         onPreShow: (dialog: Dialog) -> Unit = {}
@@ -175,9 +232,9 @@ open class CommView : LinearLayout {
         }
 
         if (dialogStyle > 0)
-            _rootDialog = android.app.Dialog(getContext(), dialogStyle)
+            _rootDialog = android.app.Dialog(act, dialogStyle)
         else
-            _rootDialog = android.app.Dialog(getContext())
+            _rootDialog = android.app.Dialog(act)
         _rootDialog!!.setContentView(this)
         _rootDialog!!.setCanceledOnTouchOutside(cancelAble)
 
@@ -211,6 +268,13 @@ open class CommView : LinearLayout {
             _rootDialog?.dismiss();
             _rootDialog = null
         } catch (e: Exception) {
+        }
+
+        try {
+            mPopup?.dismiss()
+            mPopup = null
+        } catch (e: Exception) {
+
         }
     }
 
