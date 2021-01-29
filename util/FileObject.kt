@@ -4,30 +4,38 @@ import net.rxaa.ext.FileExt
 import net.rxaa.ext.addMenu
 import net.rxaa.ext.readAllText
 import java.io.File
+import java.io.Serializable
 
 /**
  * 文件对象储存
  */
-class FileObject<T : Any>(private val clas: Class<T>, private val fileName: File? = null) {
+open class FileObject<T : Serializable>(val clas: Class<T>, private val fileName: File? = null) {
 
-    init {
 
-    }
-
-    private var inst: T? = null;
+    //对象实例
+    protected var inst: T? = null;
 
     /**
-     * 主数据
+     * 编辑并保存对象
      */
-    var dat: T
-        get() {
-            if (inst == null) {
-                load()
+    open fun edit(func: (dat: T) -> Unit) {
+        synchronized(this) {
+            val obj = inst ?: load()
+            try {
+                func(obj)
+            } finally {
+                save();
             }
-            return inst!!
         }
-        set(para) {
-            inst = para
+    }
+
+
+    /**
+     * 获取对象实例
+     */
+    val dat: T
+        get() = inst ?: synchronized(this) {
+            inst ?: load()
         }
 
 
@@ -36,32 +44,37 @@ class FileObject<T : Any>(private val clas: Class<T>, private val fileName: File
      */
     val file: File
         get() = fileName ?: FileExt.getInnerFileDir().addMenu(clas.name);
-        //get() = fileName ?: df.getFileDir().addMenu(clas.name);
+    //get() = fileName ?: df.getFileDir().addMenu(clas.name);
 
     /**
-     * 重新读取文件
+     * 重新读取文件对象
      */
-    fun load() {
+    open fun load(): T {
+        val obj = clas.newInstance();
+        val str = file.readAllText();
+        if (str.isNotEmpty()) {
+            Json.jsonToObj(str, obj)
+        }
+        inst = obj;
+        return obj
+    }
+
+    /**
+     * 清空并保存
+     */
+    open fun clear() {
         synchronized(this) {
             val obj = clas.newInstance();
-            val str = file.readAllText();
-            if (str.isNotEmpty()) {
-                Json.jsonToObj(str, obj)
-            }
             inst = obj;
+            save()
         }
     }
 
     /**
-     * 保存dat至文件
+     * 保存文件对象
      */
-    fun save() {
-        synchronized(this) {
-            if (inst == null)
-                return
-
-            val str = Json.objToJson(inst);
-            file.writeText(str);
-        }
+    open fun save() {
+        val str = Json.objToJson(inst ?: return);
+        file.writeText(str);
     }
 }

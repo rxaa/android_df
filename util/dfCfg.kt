@@ -1,6 +1,8 @@
 package net.rxaa.util
 
-class dfCfg {
+import java.io.Serializable
+
+class dfCfg : Serializable {
 
     companion object {
         val cfgFile = FileObject(dfCfg::class.java)
