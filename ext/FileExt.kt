@@ -19,6 +19,7 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.nio.charset.Charset
 import java.util.*
+import java.util.concurrent.Executors
 
 
 object FileExt {
@@ -111,28 +112,30 @@ object FileExt {
         return getFileDir() + "/err.log";
     }
 
+
+    val filePool by lazy { Executors.newFixedThreadPool(1) }
+
     /**
      * 写日志函数
      */
     @JvmStatic
-    var writeLogFunc = fun(text: String, file: File): Boolean {
-        try {
-            if (file.length() > 2 * 1024 * 1024) {
-                try {
-                    file.renameTo(file.add(".back"));
-                } catch (e: Exception) {
-                    file.delete();
+    var writeLogFunc = fun(text: String, file: File) {
+        df.runOnPool(filePool) {
+            try {
+                if (file.length() > 2 * 1024 * 1024) {
+                    try {
+                        file.renameTo(file.add(".back"));
+                    } catch (e: Exception) {
+                        file.delete();
+                    }
                 }
+
+                file.appendText("------${df.now}------\r\n$text\r\n\r\n")
+
+            } catch (ex: Exception) {
+                ex.printStackTrace()
             }
-
-            file.appendText("------${df.now}------\r\n$text\r\n\r\n")
-
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            return false
         }
-
-        return true
     };
 
     /**
@@ -140,7 +143,7 @@ object FileExt {
      */
     @JvmStatic
     @JvmOverloads
-    fun writeLog(text: String, file: File = getLogFile()): Boolean {
+    fun writeLog(text: String, file: File = getLogFile()) {
         return writeLogFunc(text, file)
     }
 
@@ -152,10 +155,10 @@ object FileExt {
                 if (ex.showAble)
                     df.msg(ex.message)
             } else if (ex is ConnectException) {
-                df.msgDialog("网络异常!")
+                df.msg("网络异常!")
             } else if (ex is SocketTimeoutException) {
-                df.msgDialog("网络链接超时!")
-            }  else {
+                df.msg("网络链接超时!")
+            } else {
                 df.msgDialog(ex.message, dfStr.error)
             }
 

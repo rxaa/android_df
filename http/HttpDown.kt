@@ -10,19 +10,19 @@ import net.rxaa.ext.plus
 import java.io.File
 import java.util.concurrent.Executors
 
-open class HttpDown {
-    var url: String = ""
 
-    constructor(url: String) {
-        this.url = url;
-    }
-
+/**
+ * http下载
+ * @param url 目标url
+ * @param fileUrl 保存的文件名
+ */
+open class HttpDown(private var url: String, private var fileUrl: File?) {
 
     companion object {
         /**
          * 数据请求链接池
          */
-        val pool = Executors.newFixedThreadPool(1)
+        val pool by lazy { Executors.newFixedThreadPool(1) }
 
         /**
          * 在线程池中run
@@ -43,41 +43,46 @@ open class HttpDown {
         return "/" + url.hashCode() + url.replace("/", "")
     }
 
-    protected var prog: (transferSize: Long, fileSize: Long) -> Unit = { _, _ -> };
+    protected var prog: (transferSize: Long, fileSize: Long) -> Unit = { _, _ -> }
     open fun progress(func: (transferSize: Long, fileSize: Long) -> Unit): HttpDown {
-        prog = func;
+        prog = func
         return this
     }
 
-    private var tempFile = true;
+    private var tempFile = true
+
+    /**
+     * 设置开启文件缓存与断点续传，默认开启
+     */
     open fun temp(temp: Boolean): HttpDown {
-        tempFile = temp;
+        tempFile = temp
         return this
     }
 
 
     open fun FileMenu(): File {
-        return getCacheMenu() + urlHash();
+        return fileUrl ?: getCacheMenu() + urlHash()
     }
 
-    private var acti: Activity? = null;
+    private var acti: Activity? = null
+
     /**
      * 关联一个activity,当activity关闭时,取消下载
      */
     open fun activity(act: Context): HttpDown {
         if (act is Activity)
-            acti = act;
+            acti = act
         return this
     }
 
     @Volatile
-    var isCancel = false;
+    var isCancel = false
 
     /**
      * 取消下载
      */
     open fun cancel() {
-        isCancel = true;
+        isCancel = true
     }
 
     open fun onHttp(ht: HttpEx) {
@@ -91,15 +96,15 @@ open class HttpDown {
 
 
         val http = try {
-            HttpEx(url);
+            HttpEx(url)
         } catch (e: Exception) {
             res(e)
-            return this;
+            return this
         }
         onHttp(http)
-        isCancel = false;
+        isCancel = false
         runPool {
-            var ex: Exception? = null;
+            var ex: Exception? = null
             if (!FileMenu().exists() || !tempFile) {
                 try {
                     http.downloadFile(FileMenu(), tempFile, prog = { trans, size ->
@@ -116,7 +121,7 @@ open class HttpDown {
                         }
                     })
                 } catch (e: Exception) {
-                    ex = e;
+                    ex = e
                 }
             }
             df.runOnUi {

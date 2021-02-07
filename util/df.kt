@@ -11,6 +11,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ import android.widget.Toast
 import kotlinx.coroutines.*
 import net.rxaa.ext.*
 import java.io.File
+import java.io.FileNotFoundException
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.*
@@ -50,7 +52,7 @@ object df {
     var density = 1f
 
     @JvmStatic
-    val actStack = ArrayList<Activity>();
+    var actStack = ArrayList<Activity>();
 
 
     @JvmStatic
@@ -103,7 +105,7 @@ object df {
 
     inline fun joinStr(size: Int, op: String, func: (i: Int) -> String): String {
         val sb = StringBuilder();
-        for (i in 0..size - 1) {
+        for (i in 0 until size) {
             sb.append(func(i))
             sb.append(op)
         }
@@ -118,7 +120,7 @@ object df {
      */
     @JvmStatic
     fun uncaughtExceptionLog(msg: Boolean = true) {
-        Thread.setDefaultUncaughtExceptionHandler({ thread, throwable ->
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
 
             FileExt.logException(throwable, msg)
 
@@ -127,7 +129,7 @@ object df {
             if (lo != null && lo == Looper.getMainLooper()) {
                 android.os.Process.killProcess(android.os.Process.myPid())
             }
-        })
+        }
 
     }
 
@@ -182,13 +184,13 @@ object df {
 
     @JvmStatic
     fun runOnPool(pool: ExecutorService, func: suspend () -> Unit) {
-        pool.execute({
+        pool.execute {
             launchUnconfined { func() }
-        })
+        }
     }
 
 
-    val handl = Handler(Looper.getMainLooper());
+    val handl by lazy { Handler(Looper.getMainLooper()) }
 
     /**
      * 切换到主线程
@@ -209,11 +211,11 @@ object df {
      * 切换到线程池
      */
     suspend fun runToPool(pool: ExecutorService) = suspendCoroutine<Unit> { conti ->
-        pool.execute({
+        pool.execute {
             FileExt.catchLog {
                 conti.resume(Unit)
             }
-        })
+        }
     }
 
     /**
@@ -228,6 +230,10 @@ object df {
         return run;
     }
 
+
+    /**
+     * 检测是否位于主线程，否post执行func, 是则直接run
+     */
     @JvmStatic
     fun runOnUiCheck(func: () -> Unit): Runnable {
         val run = Runnable {
@@ -288,23 +294,16 @@ object df {
      */
     @JvmStatic
     fun msg(str: String?, longTime: Boolean) {
-        if (df.appContext == null)
-            return
+        df.runOnUiCheck {
+            if (df.appContext == null)
+                return@runOnUiCheck
 
-        val lo = Looper.myLooper()
-        if (lo == null || lo != Looper.getMainLooper()) {
-            Handler(Looper.getMainLooper()).post {
-                if (longTime)
-                    Toast.makeText(df.appContext, str + "", Toast.LENGTH_LONG).show()
-                else
-                    Toast.makeText(df.appContext, str + "", Toast.LENGTH_SHORT).show()
-            }
-        } else {
             if (longTime)
                 Toast.makeText(df.appContext, str + "", Toast.LENGTH_LONG).show()
             else
                 Toast.makeText(df.appContext, str + "", Toast.LENGTH_SHORT).show()
         }
+
     }
 
 
@@ -442,13 +441,43 @@ object df {
         return ret;
     }
 
-    //获取本地键值数据
-    var getItem: (key: String) -> String? = {
-        null
+    fun getKeyMenu(key: String): File {
+        if (key.length >= 2) {
+            return FileExt.getCacheDir().addMenu("item/${key[0]}/${key[1]}")
+        }
+        return FileExt.getCacheDir().addMenu("item/sub")
     }
-    //设置本地键值数据
-    var setItem: (key: String, value: String) -> Unit = { k, v ->
 
+    //获取本地键值数据
+    var getItem: (key: String) -> String? = fun(key: String): String? {
+        FileExt.catchLogNoMsg {
+            val k = Crypt.getSHA2(key)
+
+            val file = getKeyMenu(k).addMenu(k);
+
+            if (!file.exists())
+                return null;
+
+            return file.readText();
+
+        }
+        return null;
+    }
+
+    //设置本地键值数据
+    var setItem: (key: String, value: String) -> Unit = { key, value ->
+        FileExt.catchLogNoMsg {
+            val k = Crypt.getSHA2(key)
+
+            val menu = getKeyMenu(k);
+
+            try {
+                menu.addMenu(k).writeText(value)
+            } catch (e: FileNotFoundException) {
+                menu.mkdirs()
+                menu.addMenu(k).writeText(value)
+            }
+        }
     }
 
     fun timeStrToLong(time: String): Long {

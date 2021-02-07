@@ -11,9 +11,11 @@ public class Crypt {
      */
     public static String getSHA2(String strSrc) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");// 将此换成SHA-1、SHA-512、SHA-384等参数
+            // 将此换成SHA-1、SHA-512、SHA-384等参数
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(strSrc.getBytes());
-            return bytes2Hex(md.digest()); // to HexString
+            // to HexString
+            return bytes2Hex(md.digest());
         } catch (NoSuchAlgorithmException e) {
             return "";
         }
