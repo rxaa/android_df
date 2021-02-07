@@ -43,6 +43,9 @@ open class CommView : LinearLayout {
 
     var dialogStyle = 0;
 
+    val cont
+        get() = context
+
     fun startActivity(inte: Intent) {
         context.startActivity(inte)
     }
@@ -58,7 +61,7 @@ open class CommView : LinearLayout {
      *  在当前线程启动协程
      */
     fun launch(func: suspend () -> Unit) {
-        df.launch(func)
+        df.launchMain(func)
     }
 
     /**

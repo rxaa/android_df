@@ -15,6 +15,8 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 import java.io.RandomAccessFile
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 import java.nio.charset.Charset
 import java.util.*
 
@@ -142,24 +144,31 @@ object FileExt {
         return writeLogFunc(text, file)
     }
 
+    var logExceptionFunc = fun(ex: Throwable, msgDialog: Boolean, msg: String) {
+        Log.e("wwwwwwwwwwwwww" + msg, "error", ex)
+        writeLog(msg + "--------\r\n" + df.getStackTraceInfo(ex))
+        if (msgDialog) {
+            if (ex is MsgException) {
+                if (ex.showAble)
+                    df.msg(ex.message)
+            } else if (ex is ConnectException) {
+                df.msgDialog("网络异常!")
+            } else if (ex is SocketTimeoutException) {
+                df.msgDialog("网络链接超时!")
+            }  else {
+                df.msgDialog(ex.message, dfStr.error)
+            }
+
+        }
+    }
+
     /**
      * 将异常写入日志
      */
     @JvmStatic
     @JvmOverloads
-    fun logException(arg1: Throwable, msgDialog: Boolean = true, msg: String = "") {
-        Log.e("wwwwwwwwwwwwww" + msg, "error", arg1)
-        writeLog(msg + "--------\r\n" + df.getStackTraceInfo(arg1))
-        if (msgDialog) {
-            if (arg1 is MsgException) {
-                if (arg1.showAble)
-                    df.msg(arg1.message)
-            } else {
-                df.msgDialog(arg1.message, dfStr.error)
-            }
-
-        }
-    }
+    fun logException(arg1: Throwable, msgDialog: Boolean = true, msg: String = "") =
+        logExceptionFunc(arg1, msgDialog, msg)
 
     fun setSpeakerphoneOn(isSpeakerphoneOn: Boolean) {
         val audioManager = df.appContext!!.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -317,6 +326,20 @@ object FileExt {
             func()
         } catch (e: Throwable) {
             logException(e)
+        }
+    }
+
+    /**
+     * 捕获所有异常加入日志
+     */
+    @JvmStatic
+    inline fun rCatchLog(toast: Boolean = true, func: () -> Unit): Throwable? {
+        return try {
+            func()
+            null
+        } catch (e: Throwable) {
+            logException(e, toast)
+            e
         }
     }
 

@@ -148,10 +148,32 @@ object df {
 
 
     /**
-     *  在当前线程启动协程
+     *  在主线程启动协程
      */
     fun launch(block: suspend () -> Unit) {
+        GlobalScope.launch(Dispatchers.Main) {
+            FileExt.catchLog {
+                block();
+            }
+        }
+    }
+
+    /**
+     *  在当前线程启动协程
+     */
+    fun launchUnconfined(block: suspend () -> Unit) {
         GlobalScope.launch(Dispatchers.Unconfined) {
+            FileExt.catchLog {
+                block();
+            }
+        }
+    }
+
+    /**
+     *  在主线程启动协程
+     */
+    fun launchMain(block: suspend () -> Unit) {
+        GlobalScope.launch(Dispatchers.Main) {
             FileExt.catchLog {
                 block();
             }
@@ -161,7 +183,7 @@ object df {
     @JvmStatic
     fun runOnPool(pool: ExecutorService, func: suspend () -> Unit) {
         pool.execute({
-            df.launch { func() }
+            launchUnconfined { func() }
         })
     }
 
@@ -420,9 +442,11 @@ object df {
         return ret;
     }
 
+    //获取本地键值数据
     var getItem: (key: String) -> String? = {
         null
     }
+    //设置本地键值数据
     var setItem: (key: String, value: String) -> Unit = { k, v ->
 
     }
@@ -617,13 +641,6 @@ object df {
         imm.hideSoftInputFromWindow(null, 0)
     }
 
-
-    @JvmStatic
-    fun setOnClick(vi: View, click: Func0) {
-        vi.setOnClickListener { v ->
-            FileExt.catchLog { click.run() }
-        }
-    }
 
     /// <summary>
     /// get file extension(not include .)

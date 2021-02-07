@@ -417,7 +417,7 @@ class SqlSession<T : Any>(
 
         sqlStr.setLength(sqlStr.length - 1)
 
-        addCondition()
+        addCondition(false)
 
         connect.update(sqlStr.toString())
         return this
@@ -434,7 +434,7 @@ class SqlSession<T : Any>(
     fun delete(): SqlSession<T> {
         sqlStr.setLength(0)
         sqlStr.append("delete from ${tableName} ")
-        addCondition()
+        addCondition(false)
         connect.update(sqlStr.toString())
 
         return this
@@ -478,13 +478,14 @@ class SqlSession<T : Any>(
         return this
     }
 
-    public fun addCondition() {
+    public fun addCondition(hasOrder:Boolean) {
         if (where.length > 4) {
-            sqlStr.append(" where " + where.substring(4))
+            if (where != " and () " && where != " or () ")
+                sqlStr.append(" where " + where.substring(4))
             where = ""
         }
 
-        if (order.length > 0)
+        if (hasOrder && order.length > 0)
             sqlStr.append(order)
 
         if (limit.length > 0)
@@ -510,7 +511,7 @@ class SqlSession<T : Any>(
     @Throws(Exception::class)
     inline fun select(func: (res: T) -> Unit): SqlSession<T> {
         _initSelect()
-        addCondition()
+        addCondition(true)
 
         connect.query(getSqlStr()) {
             func(cursorToObj(it))
@@ -548,7 +549,7 @@ class SqlSession<T : Any>(
     fun count(): Long {
         sqlStr.setLength(0)
         sqlStr.append("select count(*) from " + tableName)
-        addCondition()
+        addCondition(true)
 
         return connect.getOneLong(sqlStr.toString())
     }
@@ -777,6 +778,17 @@ class SqlSession<T : Any>(
 
         fun String?.like(r: String): SqlOp<T> {
             whereAdd(this!!.toLong(), "like", SqlData.sqlFilter(r))
+            return this@SqlOp
+        }
+
+
+        fun Comparable<*>?.`in`(r: List<Comparable<*>>): SqlOp<T> {
+            if (this is String)
+                this.`in`(r as List<String>)
+            else if (this is Long)
+                this.`in`(r as List<Long>)
+            else if (this is Int)
+                this.`in`(r as List<Int>)
             return this@SqlOp
         }
 

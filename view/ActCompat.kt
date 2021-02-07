@@ -53,7 +53,7 @@ open class ActCompat<ParaT : Serializable, RetT : Serializable> : AppCompatActiv
      *  在当前线程启动协程
      */
     fun launch(func: suspend () -> Unit) {
-        df.launch(func)
+        df.launchMain(func)
     }
 
     /**
@@ -81,24 +81,12 @@ open class ActCompat<ParaT : Serializable, RetT : Serializable> : AppCompatActiv
         ActivityEx.onActivityRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    final override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         ActivityEx.onActivityResult(this, requestCode, resultCode, data);
         FileExt.catchLog { onActivityResultEx(requestCode, resultCode, data) }
     }
 
-    override fun setContentView(layoutResID: Int) {
-        super.setContentView(layoutResID)
-
-    }
-
-    override fun setContentView(view: View?) {
-        super.setContentView(view)
-    }
-
-    override fun setContentView(view: View?, params: ViewGroup.LayoutParams?) {
-        super.setContentView(view, params)
-    }
 
     fun getContext(): ActCompat<ParaT, RetT> {
         return this

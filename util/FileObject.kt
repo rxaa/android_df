@@ -33,9 +33,15 @@ open class FileObject<T : Serializable>(val clas: Class<T>, private val fileName
     /**
      * 获取对象实例
      */
-    val dat: T
+    var dat: T
         get() = inst ?: synchronized(this) {
             inst ?: load()
+        }
+        set(value) {
+            synchronized(this) {
+                inst = value
+                save()
+            }
         }
 
 

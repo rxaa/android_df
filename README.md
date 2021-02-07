@@ -50,8 +50,10 @@ class TestTable {
     var title = ""
 }
 ```
-我们可以看到上面这个model非常的简单,不用继承任何其他乱七八糟的类,只用注解就完成了字段描述.
+我们可以看到上面这个model非常的简单,不用继承任何其他任何类,只用注解就完成了字段描述.
+
 然后创建这个表:
+
 ```kotlin
  //直接把表的类名传给createTable函数就完成了表的创建,第二个参数传了true表示带上DROP TABLE IF EXISTS这个条件
     DB.conn.createTable(TestTable::class.java, true);
@@ -60,6 +62,31 @@ class TestTable {
     DB.conn.createTable(TestTable::class.java, false, "table1");
 ```
 有一点需要提的是字段中的类型分别对应的sqlite中的类型:Int,Long,Integer对应了INTEGER类型,Float,Double,对应了REAL类型,其他则对应Text类型.
+
+其他的字段注解还有：
+
+```kotlin
+//指定字段名
+@FieldName("")
+
+//指定表名
+@TableName("")
+
+//忽略的字段
+@SqlIgnore
+
+//唯一索引
+@SqlUnique
+
+//非空字段
+@SqlNotNull
+
+//指定缺省值
+@SqlDefault("")
+
+//字段为嵌套对象，以JSON格式储存
+@SqlJSON
+```
 
 **4.增删改查**
 

@@ -4,14 +4,20 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import net.rxaa.ext.FileExt
+import net.rxaa.ext.plus
 import net.rxaa.util.df
 import java.lang.reflect.Field
 import java.util.*
 
-class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteConnect.() -> Unit = {}) {
+class SqliteConnect(
+    var dbName: String,
+    var version: Int,
+    var onUpgrade: SqliteConnect.() -> Unit = {}
+) {
     var db: SQLiteDatabase? = null
     var helper: Helper? = null
     var oldVersion = 0;
+    var dbLog = true;
 
     /**
      * 重新打开连接
@@ -72,7 +78,25 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
      */
     @Throws(Exception::class)
     fun update(sql: String, vararg objs: Any) {
-        db!!.execSQL(sql, objs)
+        val t = System.currentTimeMillis();
+        try {
+            db!!.execSQL(sql, objs)
+        } catch (e: Exception) {
+            logFunc(sql + "\r\n" + e, true);
+            throw e
+        }
+        val t2 = System.currentTimeMillis() - t;
+        logFunc("Update ${t2}ms:\r\n" + sql, false);
+    }
+
+    var logFunc = fun(sql: String, err: Boolean) {
+        if (dbLog) {
+            if (err)
+                FileExt.writeLog(sql, FileExt.getFileDir() + "/db/sqlError.txt")
+            else
+                FileExt.writeLog(sql, FileExt.getFileDir() + "/db/sql.txt")
+        }
+
     }
 
     /**
@@ -87,15 +111,23 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
      */
     @Throws(Exception::class)
     inline fun query(sql: String, vararg objs: String, res: (c: Cursor) -> Unit) {
-
-        val cur = db!!.rawQuery(sql, objs)
+        val t = System.currentTimeMillis();
         try {
-            while (cur.moveToNext()) {
-                res(cur)
+            val cur = db!!.rawQuery(sql, objs)
+            try {
+                while (cur.moveToNext()) {
+                    res(cur)
+                }
+            } finally {
+                cur.close()
             }
-        } finally {
-            cur.close()
+        } catch (e: Exception) {
+            logFunc(sql + "\r\n" + e, true);
+            throw e
         }
+
+        val t2 = System.currentTimeMillis() - t;
+        logFunc("Query ${t2}ms:\r\n" + sql, false);
     }
 
 
@@ -185,7 +217,7 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
 
             if (f.getAnnotation(SqlIndex::class.java) != null) {
                 indexs.add(
-                    "CREATE INDEX  IF NOT EXISTS  " + tableName.replace("`","") + "_i_"
+                    "CREATE INDEX  IF NOT EXISTS  " + tableName.replace("`", "") + "_i_"
                             + fName + "  ON $tableName (`$fName` ASC);"
                 )
             }
@@ -254,7 +286,11 @@ class SqliteConnect(var dbName: String, var version: Int, var onUpgrade: SqliteC
         }
     }
 
-    class Helper(name: String, version: Int, var sqlite: SqliteConnect)// TODO Auto-generated constructor stub
+    class Helper(
+        name: String,
+        version: Int,
+        var sqlite: SqliteConnect
+    )// TODO Auto-generated constructor stub
         : SQLiteOpenHelper(df.appContext, name, null, version) {
 
         var needUpgrade = false

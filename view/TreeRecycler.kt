@@ -53,7 +53,9 @@ open class TreeRecycler(
 
 }
 
-
+/**
+ * tree子节点
+ */
 open class TreeListNode(
     val parent: TreeListNode?,
     //节点左边距，根节点从0开始，每个子节点+1
@@ -85,6 +87,9 @@ open class TreeListNode(
         }
     }
 
+    /**
+     * 设置view的rotation
+     */
     fun showRotate(v: View) {
         if (isFold) {
             if (v.rotation != 0f)
@@ -118,7 +123,13 @@ open class TreeListNode(
     /**
      * 是否折叠
      */
-    var isFold = true
+    internal var isFold = true
+
+    /**
+     * 判断节点是否展开
+     */
+    val isExpand
+        get() = !isFold
 
     /**
      * 子节点列表
@@ -148,15 +159,15 @@ open class TreeListNode(
     /**
      * 切换节点展开或折叠
      */
-    fun toggleFold() {
-
+    fun toggle(v: View?) {
+        if (v != null)
+            doRotate(v)
         isFold = !isFold
         if (isFold) {
             removeData()
         } else {
             addData()
         }
-
 
     }
 
@@ -187,34 +198,41 @@ open class TreeListNode(
         return count
     }
 
-    private fun removeData() {
-        val subList = subList ?: return;
+    private fun removeData(notify: Boolean = true): Int {
+        val subList = subList ?: return 0;
         if (subList.size < 1)
-            return;
+            return 0;
         val first = subList.get(0);
         var firstIndex = -1
         firstIndex = listTree.displayList.indexOf(first)
 
         if (firstIndex < 0)
-            return;
+            return 0;
 
         val count = countExpand();
 
         if (listTree.displayList.size < firstIndex + count) {
             FileExt.logException(MsgException("firstIndex${count} count:${count} out of range:" + listTree.displayList.size))
-            return;
+            return 0;
         }
 
         listTree.displayList.subList(firstIndex, firstIndex + count).clear();
+        subList.clear()
 
-        if (listTree.enableAnimation)
-            listTree.adapter.notifyItemRangeRemoved(firstIndex, count)
-        else
-            listTree.adapter.notifyDataSetChanged()
+        if (notify) {
+            if (listTree.enableAnimation)
+                listTree.adapter.notifyItemRangeRemoved(firstIndex, count)
+            else
+                listTree.adapter.notifyDataSetChanged()
+        }
+
+
+        return count;
     }
 
     private fun addData() {
         val subList = subList ?: return;
+
         for (i in 0 until listTree.displayList.size) {
             val node = listTree.displayList[i]
             if (this == node) {
@@ -234,19 +252,23 @@ open class TreeListNode(
 
     /**
      * 绑定节点数据（可以通过判断isLoad来避免重复绑定）
-     * list:  绑定数据
-     * onCreate 同RecyclerView, 创建View回调
-     * onBind   同RecyclerView, 显示View item回调
+     * @param list:  绑定数据
+     * @param onCreate 同RecyclerView, 创建View回调
+     * @param onBindView   同RecyclerView, 显示View item回调
      */
     inline fun <ListT, reified ViewT : CommView> bindSubList(
         list: MutableList<ListT>,
         noinline onCreate: (viewType: Int) -> ViewT,
-        noinline onBind: (view: ViewT, dat: ListT, index: Int, node: TreeListNode) -> Unit
+        noinline onBindView: (view: ViewT, dat: ListT, index: Int, node: TreeListNode) -> Unit
     ) {
         viewClass = ViewT::class.java
-        _bindSubList(list, onCreate, onBind)
+        _bindSubList(list, onCreate, onBindView)
     }
 
+
+    /**
+     * 绑定节点为一个单独的view
+     */
     fun bindSubView(view: CommView) {
 
         val list = subList ?: ArrayList<TreeListNode>().also {
@@ -261,15 +283,17 @@ open class TreeListNode(
 
         list.add(node)
 
-        if (parent == null)
+        if (parent == null) {
             listTree.displayList.add(node);
+            listTree.adapter.notifyDataSetChanged()
+        }
     }
 
     @Suppress("UNCHECKED_CAST")
     fun <ListT, ViewT : CommView> _bindSubList(
         list: MutableList<ListT>,
         onCreate: (viewType: Int) -> ViewT,
-        onBind: (view: ViewT, dat: ListT, index: Int, node: TreeListNode) -> Unit
+        onBind: (view: ViewT, dat: ListT, index: Int, node: TreeListNode) -> Unit,
     ) {
 
         listTree.viewTypeMap.put(ClassId.getId(viewClass), this)
@@ -279,11 +303,15 @@ open class TreeListNode(
 
         val isFirst = subList == null;
 
+        var oldCount = 0;
         subList.notNull {
+            //移除节点旧数据
+            oldCount = removeData(false)
             it.clear()
         }.nope {
             subList = ArrayList<TreeListNode>();
         }
+
         list.forEachIndexed { index, dat ->
             val subs = subList ?: return@forEachIndexed
 
@@ -296,12 +324,28 @@ open class TreeListNode(
 
             subs.add(node)
 
-            if (parent == null)
+            if (parent == null) {
+                //根节点，强制展开显示
                 listTree.displayList.add(node);
+            }
+
         }
 
+        if (parent == null) {
+            //
+            listTree.adapter.notifyDataSetChanged()
+        } else if (isExpand) {
+            if (oldCount > 0) {
+                //如果节点已经展开，则静默式替换数据
+                val old = listTree.enableAnimation
+                listTree.enableAnimation = false
+                addData()
+                listTree.enableAnimation = old
+            } else {
+                addData()
+            }
 
-        //listTree.adapter.notifyDataSetChanged()
+        }
 
     }
 }
@@ -394,7 +438,7 @@ class TreeAdapter(val list: TreeRecycler) : RecyclerView.Adapter<RecyItemHolder>
             if (holder.layoutPosition > mLastPosition) {
                 val animation = mSelectAnimation
                 for (anim in animation.getAnimators(holder.itemView)) {
-                    anim.setDuration(300).start()
+                    anim.setDuration(200).start()
                     anim.interpolator = mInterpolator
                 }
                 mLastPosition = holder.layoutPosition

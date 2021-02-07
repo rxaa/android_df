@@ -88,7 +88,7 @@ val <T : View> T.gone: T
 
 fun <T : View> T.onClick(cb: suspend (v: T) -> Unit): T {
     this.setOnClickListener { _ ->
-        df.launch {
+        df.launchMain {
             cb(this)
         }
     }
@@ -97,7 +97,7 @@ fun <T : View> T.onClick(cb: suspend (v: T) -> Unit): T {
 
 fun <T : View> T.onLongClick(cb: suspend (v: T) -> Unit): T {
     this.setOnLongClickListener { v ->
-        df.launch { cb(this) }
+        df.launchMain { cb(this) }
         return@setOnLongClickListener true;
     }
     return this
