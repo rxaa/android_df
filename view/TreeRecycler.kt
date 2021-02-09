@@ -128,7 +128,7 @@ open class TreeListNode(
 
     lateinit var listTree: TreeRecycler;
 
-    internal lateinit var datas: MutableList<*>;
+    internal lateinit var datas: List<*>;
 
     /**
      * 是否折叠
@@ -274,7 +274,7 @@ open class TreeListNode(
      * @param onBindView   同RecyclerView, 显示View item回调
      */
     inline fun <ListT, reified ViewT : CommView> bindSubList(
-        list: MutableList<ListT>,
+        list: List<ListT>,
         noinline onCreate: (viewType: Int) -> ViewT,
         noinline onBindView: (view: ViewT, dat: ListT, index: Int, node: TreeListNode) -> Unit
     ) {
@@ -324,7 +324,7 @@ open class TreeListNode(
 
     @Suppress("UNCHECKED_CAST")
     fun <ListT, ViewT : CommView> _bindSubList(
-        list: MutableList<ListT>,
+        list: List<ListT>,
         onCreate: (viewType: Int) -> ViewT,
         onBind: (view: ViewT, dat: ListT, index: Int, node: TreeListNode) -> Unit,
     ) {
