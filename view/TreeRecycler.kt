@@ -1,6 +1,7 @@
 package net.rxaa.view
 
 import android.content.Context
+import android.util.Log
 import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
@@ -100,11 +101,20 @@ open class TreeListNode(
         }
     }
 
+
+    companion object {
+        val lastAnimTime: Int = 0x72611122
+        val animTime: Long = 300;
+    }
+
     fun doRotate(v: View) {
+        if (!listTree.enableAnimation) {
+            return;
+        }
         if (isFold) {
-            Animator(v).rotation(90f, 300).start()
+            Animator(v).rotation(90f, animTime).start()
         } else {
-            Animator(v).rotation(00f, 300).start()
+            Animator(v).rotation(00f, animTime).start()
         }
     }
 
@@ -181,6 +191,9 @@ open class TreeListNode(
         }
     }
 
+
+    val subNodeCount
+        get() = subList?.size ?: 0
 
     /**
      * 计算子节点个数
@@ -261,10 +274,26 @@ open class TreeListNode(
         noinline onCreate: (viewType: Int) -> ViewT,
         noinline onBindView: (view: ViewT, dat: ListT, index: Int, node: TreeListNode) -> Unit
     ) {
+
         viewClass = ViewT::class.java
-        _bindSubList(list, onCreate, onBindView)
+        val len = System.currentTimeMillis() - lastBindTime
+
+        //防止bind过快，动画效果不好
+        if (len < animTime && listTree.enableAnimation) {
+            df.runOnUi(animTime - len) {
+                _bindSubList(list, onCreate, onBindView)
+            }
+        } else {
+            _bindSubList(list, onCreate, onBindView)
+        }
+        lastBindTime = System.currentTimeMillis()
     }
 
+
+    /**
+     * 上次bind时间戳
+     */
+    var lastBindTime: Long = 0;
 
     /**
      * 绑定节点为一个单独的view
