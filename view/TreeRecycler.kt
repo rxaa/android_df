@@ -152,6 +152,9 @@ open class TreeListNode(
     internal var typeViewList: ArrayList<TreeRecyvlerData>? = null;
 
 
+    /**
+     * 该节点是否已经加载成员数据
+     */
     val isLoad: Boolean
         get() = !subList.isNullOrEmpty()
 
@@ -161,6 +164,7 @@ open class TreeListNode(
     fun expand() {
         if (isFold) {
             isFold = false;
+            removeData(false)
             addData()
         }
     }
@@ -176,6 +180,7 @@ open class TreeListNode(
         if (isFold) {
             removeData()
         } else {
+            removeData(false)
             addData()
         }
 
@@ -230,7 +235,6 @@ open class TreeListNode(
         }
 
         listTree.displayList.subList(firstIndex, firstIndex + count).clear();
-        subList.clear()
 
         if (notify) {
             if (listTree.enableAnimation)
