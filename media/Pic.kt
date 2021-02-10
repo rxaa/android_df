@@ -86,7 +86,13 @@ object Pic {
         val drawable = object : BitmapDrawable(df.appContext!!.resources, b) {
             override fun draw(canvas: Canvas) {
                 canvas.save()
-                canvas.rotate(angle, b.width.toFloat() / 2, (b.height.toFloat() / 2))
+                val w = canvas.clipBounds.right - canvas.clipBounds.left
+                val h = canvas.clipBounds.bottom - canvas.clipBounds.top
+                canvas.rotate(
+                    angle,
+                    w.toFloat() / 2,
+                    (h.toFloat() / 2)
+                )
                 super.draw(canvas)
                 canvas.restore()
             }

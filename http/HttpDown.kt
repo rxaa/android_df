@@ -16,7 +16,7 @@ import java.util.concurrent.Executors
  * @param url 目标url
  * @param fileUrl 保存的文件名
  */
-open class HttpDown(private var url: String, private var fileUrl: File?) {
+open class HttpDown(private var url: String, private var fileUrl: File? = null) {
 
     companion object {
         /**
