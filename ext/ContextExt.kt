@@ -96,7 +96,7 @@ fun Window.statusBarTransparent() {
  */
 fun Window.statusBarTransparentHalf() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        //            window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        //window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         this.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
     }
 }

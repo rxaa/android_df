@@ -13,6 +13,8 @@ open class FileObject<T : Serializable>(val clas: Class<T>, private val fileName
 
 
     //对象实例
+
+    @Volatile
     protected var inst: T? = null;
 
     /**

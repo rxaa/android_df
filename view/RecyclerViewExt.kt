@@ -24,6 +24,9 @@ fun setViewLayout(view: CommView) {
     }
 }
 
+
+
+
 /**
  * 绑定一个BaseView
  */
@@ -39,7 +42,7 @@ fun RecyclerView.bindView(
     if (adapter is RecybindAdapter) {
         adapter.setOnMove(null)
         adapter.list.add(
-            recyvlerData(
+            RecyclerData(
                 null,
                 { throw Exception("Can not create") },
                 { view, dat, index -> },
@@ -67,7 +70,7 @@ fun <T, TV : CommView> RecyclerView.bindList(
     if (adapter is RecybindAdapter) {
         adapter.setOnMove(onMove)
         adapter.list.add(
-            recyvlerData(
+            RecyclerData(
                 list as List<Any>,
                 onCreate,
                 onBind as (view: CommView, dat: Any, index: Int) -> Unit,
@@ -88,7 +91,7 @@ internal fun initAdapter(re: RecyclerView, cont: Context): RecybindAdapter {
     return ada;
 }
 
-class recyvlerData(
+class RecyclerData(
     val list: List<Any>?,
     val onCreate: () -> CommView,
     val onBind: (view: CommView, dat: Any, index: Int) -> Unit,
@@ -107,7 +110,7 @@ class recyvlerData(
 
 
 class RecybindAdapter(val recyvler: RecyclerView) : RecyclerView.Adapter<RecyItemHolder>() {
-    val list = ArrayList<recyvlerData>();
+    val list = ArrayList<RecyclerData>();
 
     var itemTouch: ItemTouchHelper? = null;
 
@@ -119,7 +122,7 @@ class RecybindAdapter(val recyvler: RecyclerView) : RecyclerView.Adapter<RecyIte
         }
     }
 
-    inline fun findDat(position: Int, res: (dat: recyvlerData, i: Int, size: Int) -> Unit) {
+    inline fun findDat(position: Int, res: (dat: RecyclerData, i: Int, size: Int) -> Unit) {
         var sizeCount = 0;
         for (i in 0 until list.size) {
             val dat = list[i];

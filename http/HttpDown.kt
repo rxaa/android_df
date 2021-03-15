@@ -85,6 +85,9 @@ open class HttpDown(private var url: String, private var fileUrl: File? = null) 
         isCancel = true
     }
 
+    //请求标识
+    var httpTag: String? = null
+
     open fun onHttp(ht: HttpEx) {
 
     }
