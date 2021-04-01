@@ -13,6 +13,8 @@ import android.telephony.TelephonyManager
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 
 
 fun Context.getConnectivityManager(): ConnectivityManager {
@@ -74,6 +76,36 @@ fun Activity.statusBarLight() {
     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+    }
+}
+
+/**
+ * 沉浸式状态栏
+ */
+fun Activity.statusNoBarLight(black: Boolean = true) {
+    if (black) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        }
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        val decorView = window.decorView
+        decorView.setOnApplyWindowInsetsListener { v, insets ->
+            val defaultInsets = v.onApplyWindowInsets(insets)
+            defaultInsets.replaceSystemWindowInsets(
+                defaultInsets.systemWindowInsetLeft,
+                0,
+                defaultInsets.systemWindowInsetRight,
+                defaultInsets.systemWindowInsetBottom
+            )
+        }
+        ViewCompat.requestApplyInsets(decorView)
+        //将状态栏设成透明，如不想透明可设置其他颜色
+        window.statusBarColor =ContextCompat.getColor(this, android.R.color.transparent)
     }
 }
 

@@ -1,18 +1,10 @@
----
-html:
-  embed_local_images: false
-  embed_svg: true
-  offline: false
-  toc: true
-export_on_save:
-  html: true
----
-
 #android上sqlite的orm
 
 基于kotlin开发,利用各种高级lambda特性实现了类似LINQ的强类型,带智能感知的sql语句书写,且要比LINQ的抽象语法树解析高效的多.
 
-### 1.初始化：
+## 用法: ##
+
+**1.首先要配置kotlin,这个就不多说了.**
 
 在Application的onCreate()里初始化：
 
@@ -21,7 +13,7 @@ df.init(this);
 ```
 
 
-### 2.创建一个数据库链接
+**2.创建一个数据库链接**
 
 ```kotlin
 object DB {
@@ -40,7 +32,7 @@ object DB {
 ```
 以上我们通过SqliteConnect的构造函数创建了数据库链接,赋值给了conn,接下来就要创建一张表了.我们可以看到SqliteConnect对象里有个createTable函数,用它来建表,我们需要传递一个定义了表各个字段的class.
 
-### 3.在数据库中创建表
+**3.在数据库中创建表**
 首先来建一个表实体model类
 ```kotlin
 class TestTable {
@@ -96,7 +88,7 @@ class TestTable {
 @SqlJSON
 ```
 
-### 4.增删改查
+**4.增删改查**
 
 SqliteConnect对象里带一个query函数支持写原生sql语句,暂不多说,我们主要关注的是强类型且带智能感知的sql语句写法.
 
@@ -137,7 +129,7 @@ object DB {
     DB.testTable().insert(t2, false)
 ```
 
-#### where查询语句:
+**where查询语句**:
 ```kotlin
     //利用了.号连贯操作(生成了这样的sql语句:select * from testTable where title='标题')
     val list = DB.testTable().where { it.title.eq("标题") }.toArray();
@@ -165,11 +157,9 @@ object DB {
     val list2 = s.toArray();
 ```
 
-#### 删除
+**删除**,没什好说的就是把上面的where语句后面的toArray()函数换成delete();
 
-把上面的where语句后面的toArray()函数换成delete()即可;
-
-#### 更新
+**更新**
 
 在以上的where条件之后带上update函数:
 ```kotlin
@@ -181,7 +171,7 @@ orm中已经对所有参数进行了注入过滤.
 
 增删改查中出现错误会抛出异常.
 
-### 5.数据库升级
+**5.数据库升级**
 
 SqliteConnect构造函数的第三个参数为升级回调函数,会在第一次数据库创建,和每次dbVersion版本号增加时调用:
 ```kotlin
@@ -199,114 +189,5 @@ val conn by lazy {
     }
 ```
 
-### 6.多表链接查询:
-假设我们有两个表A与B为如下结构:
-
-```kotlin
-class A {
-    @PrimaryKey
-    @Autoincrement
-    var id = 0;
-
-    var filed1 = "";
-
-    var field2 = "";
-
-}
-
-class B {
-    @PrimaryKey
-    @Autoincrement
-    var id = 0;
-
-    var filed1 = "";
-
-    var field3 = "";
-}
-
-object DB {
-    val conn by lazy {
-        //参数为数据库路径,与版本号
-        SqliteConnect("/sdcard/test.db", 1).open()
-    }
-
-
-    fun a() = SqlSession(A::class.java, conn)
-    fun b() = SqlSession(B::class.java, conn)
-}
-```
-
-将这两个表相连,首先需要创建一个新类:
-
-```kotlin
-class AB {
-    @PrimaryKey
-    @FieldTable(A::class) //与B表字段重复,需额外指定所属表名
-    var id = 0;
-
-    @FieldTable(A::class)//与B表字段重复,需额外指定所属表名
-    var filed1 = "";
-
-    var field2 = "";
-
-    //与A表字段重复,需额外指定所属表名与字段名,并且使用别名b_id
-    @FieldTable(B::class)
-    @FieldName("id")
-    var b_id = 0;
-
-    //同上
-    @FieldTable(B::class)
-    @FieldName("filed1")
-    var b_filed1 = "";
-
-    var field3 = "";
-}
-```
-联表最麻烦的就是要处理各种重名问题,需要通过类字段注解来说明清楚重名的字段.
-
-然后就是写一条联表规则:
-
-```kotlin
-object DB {
-
-	......
-
-    fun a() = SqlSession(A::class.java, conn)
-    fun b() = SqlSession(B::class.java, conn)
-
-    //将a与b进行inner join链接,条件是 on a.id=b.id
-    val joinAB = DB.a().innerJoin(B::class.java) { a, b -> a.id.eqF(b.id) }//注意是eqF不是eq
-
-    //将innerJoin的返回值传给SqlSession的第三个参数
-    fun a_b() = SqlSession(AB::class.java, conn, joinAB)
-}
-```
-
-之后就可以像操作A和B一样,通过DB.a_b()来使用这个联表.
-
-更多表的链接和上面类似,在innerJoin函数后面继续join.
-
-
-```kotlin
-class C {
-    @PrimaryKey
-    @Autoincrement
-    var id = 0;
-
-    var filed1 = "";
-
-}
-
-object DB {
-
-	......
-
-    //a inner join b on a.id=b.id left join c on a.id=c.id
-    val joinABC = DB.a()
-            .innerJoin(B::class.java) { a, b -> a.id.eqF(b.id) }
-            .leftJoin(C::class.java) { a, b, c -> a.id.eqF(c.id) }
-
-    fun a_b_c() = SqlSession(ABC::class.java, conn, joinABC)
-}
-
-```
+**6.多表链接查询:**
+[多表连接查询](join.md)

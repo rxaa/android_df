@@ -86,8 +86,14 @@ val <T : View> T.gone: T
         return this
     }
 
+var lastClickTime = 0L
+
 fun <T : View> T.onClick(cb: suspend (v: T) -> Unit): T {
     this.setOnClickListener { _ ->
+        if (System.currentTimeMillis() - lastClickTime < 500) {
+            return@setOnClickListener
+        }
+        lastClickTime = System.currentTimeMillis()
         df.launchMain {
             cb(this)
         }
