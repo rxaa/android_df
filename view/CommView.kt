@@ -155,6 +155,10 @@ open class CommView : LinearLayout {
         inflate(context, resId, this)
         getChildAt(childCount - 1).notNull {
             inflateView = it;
+            if(it is LinearLayout){
+                layoutParams = it.layoutParams
+            }
+
         }
         return BindViewEx {
             func(inflateView)

@@ -148,7 +148,7 @@ object FileExt {
     }
 
     var logExceptionFunc = fun(ex: Throwable, msgDialog: Boolean, msg: String) {
-        Log.e("wwwwwwwwwwwwww" + msg, "error", ex)
+        
         writeLog(msg + "--------\r\n" + df.getStackTraceInfo(ex))
         if (msgDialog) {
             if (ex is MsgException) {
