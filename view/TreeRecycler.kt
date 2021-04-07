@@ -6,6 +6,7 @@ import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
+import android.widget.LinearLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import net.rxaa.util.*
@@ -266,6 +267,29 @@ open class TreeListNode(
 
     }
 
+    /**
+     * 绑定横向节点数据（可以通过判断isLoad来避免重复绑定）
+     * @param list:  绑定数据
+     * @param onCreate 同RecyclerView, 创建View回调
+     * @param onBindView   同RecyclerView, 显示View item回调
+     */
+    inline fun <ListT, reified ViewT : CommView> bindHorizonList(
+        list: List<ListT>,
+        noinline onCreate: (viewType: Int) -> ViewT,
+        noinline onBindView: (view: ViewT, dat: ListT, index: Int) -> Unit
+    ) {
+        val arr = arrayListOf("")
+
+        bindSubList(arr, { RowView(listTree.cont, listTree) }) { vi, d, i, n ->
+
+            list.forEachIndexed { index, dat ->
+                val v = onCreate(0)
+                onBindView(v, dat, index)
+                vi.addView(v)
+            }
+
+        }
+    }
 
     /**
      * 绑定节点数据（可以通过判断isLoad来避免重复绑定）
@@ -398,6 +422,12 @@ class TreeRecyvlerData(
     }
 
 
+}
+
+class RowView(context: Context, val listTree: TreeRecycler) : CommView(context) {
+    init {
+        orientation = LinearLayout.HORIZONTAL
+    }
 }
 
 
