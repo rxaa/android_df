@@ -3,17 +3,13 @@ package net.rxaa.view
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewParent
 import android.widget.*
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import net.rxaa.ext.*
 import net.rxaa.util.df
-import net.rxaa.ext.nope
-import net.rxaa.ext.notNull
-import net.rxaa.ext.FileExt
-import net.rxaa.ext.gone
-import net.rxaa.ext.onClick
-import net.rxaa.ext.show
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
@@ -25,9 +21,10 @@ import kotlin.collections.HashMap
  */
 open class ListViewEx<ListT>(
     cont: Context,
-    groupView: ViewGroup,
-    val parentView: CommView? = null
+    val groupView: ViewGroup,
 ) {
+
+    val parentView by lazy { groupView.findParentCommView() }
 
     /**
      * 关联的List数据
@@ -82,56 +79,7 @@ open class ListViewEx<ListT>(
     internal var linearView: LinearLayout? = null
     internal var _recyclerView: RecyclerView? = null
 
-    /**
-     *  缓存view item的子view
-     */
-    internal var viewBuffer: HashMap<Class<*>, ArrayList<CommView>>? = null
-
-    /**
-     * view item子view最大缓存数
-     */
-    val maxViewBuffer = 10;
-
-    fun getViewBuffer(clas: Class<*>): CommView? {
-        val list = viewBuffer?.get(clas);
-        if (list != null && list.size > 0) {
-            return list.removeLast();
-        }
-        return null;
-    }
-
-    fun addViewBuffer(vi: ViewGroup) {
-        for (i in 0 until vi.childCount) {
-            vi.getChildAt(i).notNull {
-                if (it is CommView) {
-                    addViewBuffer(it);
-                }
-            }
-
-        }
-
-    }
-
-    fun addViewBuffer(vEx: CommView) {
-        val map = viewBuffer ?: HashMap();
-        if (viewBuffer == null) {
-            viewBuffer = map;
-        }
-        map.get(vEx.javaClass).notNull {
-            addViewBuffer(vEx, it)
-        }.nope {
-            val list = ArrayList<CommView>();
-            map.put(vEx.javaClass, list);
-            addViewBuffer(vEx, list)
-        }
-
-    }
-
-    fun addViewBuffer(vi: CommView, list: ArrayList<CommView>) {
-        if (list.size < maxViewBuffer) {
-            list.add(vi);
-        }
-    }
+    internal val buffer = ViewBuffer();
 
 
     init {
@@ -394,7 +342,7 @@ open class ListViewEx<ListT>(
                     val type = getViewType(index)
                     onCreateView(type).apply {
                         viewType = type
-                        listEx = this@ListViewEx;
+                        listEx = buffer;
                     }
                 } else {
                     vi
@@ -519,7 +467,7 @@ open class ListViewEx<ListT>(
 
     private fun addLinearView(i: Int) {
         parentListBuffer { list, viewCls ->
-            val ve = list.getViewBuffer(viewCls)
+            val ve = buffer.getViewBuffer(viewCls)
             val v = showListItem(ve, i)
             linearView!!.addView(v)
             return
@@ -543,12 +491,19 @@ open class ListViewEx<ListT>(
     }
 
 
-    inline fun parentListBuffer(func: (list: ListViewEx<*>, viewCls: Class<*>) -> Unit) {
-        if (parentView != null) {
-            defaultViewClass.notNull { vc ->
-                parentView.listEx.notNull {
-                    func(it, vc);
+    /**
+     * 查找顶层buffer,待优化，目前只找一层
+     */
+    inline fun parentListBuffer(func: (list: ViewBuffer, viewCls: Class<*>) -> Unit) {
+        defaultViewClass.notNull { vc ->
+
+            var p: ViewParent? = groupView.parent;
+            while (p != null) {
+                if (p is CommView && p.listEx != null) {
+                    func(p.listEx!!, vc);
+                    return
                 }
+                p = p.parent
             }
         }
     }
@@ -739,7 +694,7 @@ open class ListViewEx<ListT>(
 
         return onCreateView(wtype).apply {
             viewType = wtype;
-            listEx = this@ListViewEx
+            listEx = buffer
         }
     }
 
@@ -750,7 +705,7 @@ open class ListViewEx<ListT>(
                 val vi = if (arg1 == null) {
                     onCreateView(type).apply {
                         viewType = type;
-                        listEx = this@ListViewEx
+                        listEx = buffer
                     }
                 } else {
                     getViewByType(arg1 as CommView, type)
