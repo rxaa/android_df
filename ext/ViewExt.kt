@@ -101,7 +101,7 @@ var lastClickTime = 0L
 
 fun <T : View> T.onClick(cb: suspend (v: T) -> Unit): T {
     this.setOnClickListener { _ ->
-        if (System.currentTimeMillis() - lastClickTime < 500) {
+        if (System.currentTimeMillis() - lastClickTime < 120) {
             return@setOnClickListener
         }
         lastClickTime = System.currentTimeMillis()
