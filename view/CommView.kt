@@ -67,7 +67,7 @@ open class CommView : LinearLayout {
     /**
      * 清除指定的viewGroup,并将其成员View加入缓存
      */
-    open fun clearView() {
+    open fun ViewGroup.clearView() {
         listEx.notNull {
             it.addViewBuffer(this);
             this.removeAllViews()
@@ -76,6 +76,17 @@ open class CommView : LinearLayout {
         }
     }
 
+    /**
+     * 清除指定的viewGroup,并将其成员View加入缓存
+     */
+    open fun clearView() {
+        listEx.notNull {
+            it.addViewBuffer(this);
+            this.removeAllViews()
+        }.nope {
+            this.removeAllViews()
+        }
+    }
 
     /**
      * view scroll回调

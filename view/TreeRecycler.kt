@@ -285,6 +285,7 @@ open class TreeListNode(
             vi.clearView()
             list.forEachIndexed { index, dat ->
                 val v = listTree.buffer.getViewBuffer(ViewT::class.java) as? ViewT ?: onCreate()
+                v.listEx = listTree.buffer;
                 onBindView(v, dat, index)
                 vi.addView(v)
             }
