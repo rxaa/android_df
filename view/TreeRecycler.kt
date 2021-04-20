@@ -424,10 +424,8 @@ class TreeRecyvlerData(
 
 }
 
-class RowView(context: Context, val listTree: TreeRecycler) : CommView(context) {
-    init {
-        orientation = LinearLayout.HORIZONTAL
-    }
+class RowView(context: Context, val listTree: TreeRecycler) : AutoNextLineLinearlayout(context) {
+
 }
 
 

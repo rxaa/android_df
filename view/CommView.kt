@@ -51,7 +51,7 @@ open class CommView : LinearLayout {
     }
 
     //该view所属的ListViewEx
-    var listEx: ListViewEx<*>? = null;
+    var listEx: ViewBuffer? = null;
 
     internal var _rootDialog: Dialog? = null;
 
