@@ -554,7 +554,7 @@ open class ListViewEx<ListT>(
             parentListBuffer { list, viewCls ->
                 linearView.getChildAt(i).notNull {
                     if (it is CommView) {
-                        list.addViewBuffer(it)
+                        list.addViewToBuffer(it)
                     }
                 }
 
@@ -581,7 +581,7 @@ open class ListViewEx<ListT>(
                 parentListBuffer { list, viewCls ->
                     linearView.getChildAt(i).notNull {
                         if (it is CommView) {
-                            list.addViewBuffer(it)
+                            list.addViewToBuffer(it)
                         }
                     }
                 }
