@@ -79,7 +79,9 @@ open class ListViewEx<ListT>(
     internal var linearView: LinearLayout? = null
     internal var _recyclerView: RecyclerView? = null
 
-    internal val buffer = ViewBuffer();
+    internal val buffer: ViewBuffer by lazy {
+        parentView?.listEx ?: ViewBuffer()
+    }
 
 
     init {
@@ -514,10 +516,13 @@ open class ListViewEx<ListT>(
     fun clear() {
         data.clear()
         linearView.notNull { linear ->
-            parentListBuffer { list, viewCls ->
-                list.addViewBuffer(linear);
+            if (linear.childCount > 0) {
+                parentListBuffer { list, viewCls ->
+                    list.addViewBuffer(linear);
+                }
+                linear.removeAllViews()
             }
-            linear.removeAllViews()
+
         }
         update()
     }

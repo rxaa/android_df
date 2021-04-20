@@ -76,6 +76,7 @@ open class CommView : LinearLayout {
         }
     }
 
+
     /**
      * view scroll回调
      */
@@ -118,11 +119,13 @@ open class CommView : LinearLayout {
             else
                 newViewFunc()
 
+            v.listEx = listEx;
             view.addView(v);
             return v;
         }
 
         val v = newViewFunc();
+        v.listEx = null
         view.addView(v);
         return v;
     }
@@ -155,7 +158,7 @@ open class CommView : LinearLayout {
         inflate(context, resId, this)
         getChildAt(childCount - 1).notNull {
             inflateView = it;
-            if(it is LinearLayout){
+            if (it is LinearLayout) {
                 layoutParams = it.layoutParams
             }
 

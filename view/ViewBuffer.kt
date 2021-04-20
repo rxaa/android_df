@@ -1,5 +1,6 @@
 package net.rxaa.view
 
+import android.util.Log
 import android.view.ViewGroup
 import net.rxaa.ext.nope
 import net.rxaa.ext.notNull
