@@ -57,7 +57,7 @@ object FileExt {
     fun getExternalDir(): File {
         try {
             val sdCardExist =
-                Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED   //判断sd卡是否存在
+                    Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED   //判断sd卡是否存在
             if (sdCardExist) {
                 return Environment.getExternalStorageDirectory()//获取根目录
             }
@@ -148,7 +148,7 @@ object FileExt {
     }
 
     var logExceptionFunc = fun(ex: Throwable, msgDialog: Boolean, msg: String) {
-        
+
         writeLog(msg + "--------\r\n" + df.getStackTraceInfo(ex))
         if (msgDialog) {
             if (ex is MsgException) {
@@ -171,7 +171,7 @@ object FileExt {
     @JvmStatic
     @JvmOverloads
     fun logException(arg1: Throwable, msgDialog: Boolean = true, msg: String = "") =
-        logExceptionFunc(arg1, msgDialog, msg)
+            logExceptionFunc(arg1, msgDialog, msg)
 
     fun setSpeakerphoneOn(isSpeakerphoneOn: Boolean) {
         val audioManager = df.appContext!!.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -184,73 +184,75 @@ object FileExt {
     }
 
     internal val MIME_MapTable = arrayOf(
-        //{后缀名，MIME类型}
-        arrayOf(".3gp", "video/3gpp"),
-        arrayOf(".apk", "application/vnd.android.package-archive"),
-        arrayOf(".asf", "video/x-ms-asf"),
-        arrayOf(".avi", "video/x-msvideo"),
-        arrayOf(".bin", "application/octet-stream"),
-        arrayOf(".bmp", "image/bmp"),
-        arrayOf(".c", "text/plain"),
-        arrayOf(".class", "application/octet-stream"),
-        arrayOf(".conf", "text/plain"),
-        arrayOf(".cpp", "text/plain"),
-        arrayOf(".doc", "application/msword"),
-        arrayOf(".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-        arrayOf(".xls", "application/vnd.ms-excel"),
-        arrayOf(".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
-        arrayOf(".exe", "application/octet-stream"),
-        arrayOf(".gif", "image/gif"),
-        arrayOf(".h", "text/plain"),
-        arrayOf(".htm", "text/html"),
-        arrayOf(".html", "text/html"),
-        arrayOf(".jar", "application/java-archive"),
-        arrayOf(".java", "text/plain"),
-        arrayOf(".jpeg", "image/jpeg"),
-        arrayOf(".jpg", "image/jpeg"),
-        arrayOf(".js", "application/x-javascript"),
-        arrayOf(".log", "text/plain"),
-        arrayOf(".m3u", "audio/x-mpegurl"),
-        arrayOf(".m4a", "audio/mp4a-latm"),
-        arrayOf(".m4b", "audio/mp4a-latm"),
-        arrayOf(".m4p", "audio/mp4a-latm"),
-        arrayOf(".m4u", "video/vnd.mpegurl"),
-        arrayOf(".m4v", "video/x-m4v"),
-        arrayOf(".mov", "video/quicktime"),
-        arrayOf(".mp2", "audio/x-mpeg"),
-        arrayOf(".mp3", "audio/x-mpeg"),
-        arrayOf(".mp4", "video/mp4"),
-        arrayOf(".mpc", "application/vnd.mpohun.certificate"),
-        arrayOf(".mpe", "video/mpeg"),
-        arrayOf(".mpeg", "video/mpeg"),
-        arrayOf(".mpg", "video/mpeg"),
-        arrayOf(".mpg4", "video/mp4"),
-        arrayOf(".mpga", "audio/mpeg"),
-        arrayOf(".msg", "application/vnd.ms-outlook"),
-        arrayOf(".ogg", "audio/ogg"),
-        arrayOf(".pdf", "application/pdf"),
-        arrayOf(".png", "image/png"),
-        arrayOf(".pps", "application/vnd.ms-powerpoint"),
-        arrayOf(".ppt", "application/vnd.ms-powerpoint"),
-        arrayOf(
-            ".pptx",
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        ),
-        arrayOf(".prop", "text/plain"),
-        arrayOf(".rc", "text/plain"),
-        arrayOf(".rmvb", "audio/x-pn-realaudio"),
-        arrayOf(".rtf", "application/rtf"),
-        arrayOf(".sh", "text/plain"),
-        arrayOf(".tar", "application/tar"),
-        arrayOf(".tgz", "application/tgz"),
-        arrayOf(".txt", "text/plain"),
-        arrayOf(".wav", "audio/x-wav"),
-        arrayOf(".wma", "audio/x-ms-wma"),
-        arrayOf(".wmv", "audio/x-ms-wmv"),
-        arrayOf(".wps", "application/vnd.ms-works"),
-        arrayOf(".xml", "text/plain"),
-        arrayOf(".zip", "application/zip"),
-        arrayOf("", "*/*")
+            //{后缀名，MIME类型}
+            arrayOf(".3gp", "video/3gpp"),
+            arrayOf(".apk", "application/vnd.android.package-archive"),
+            arrayOf(".asf", "video/x-ms-asf"),
+            arrayOf(".avi", "video/x-msvideo"),
+            arrayOf(".bin", "application/octet-stream"),
+            arrayOf(".bmp", "image/bmp"),
+            arrayOf(".c", "text/plain"),
+            arrayOf(".class", "application/octet-stream"),
+            arrayOf(".conf", "text/plain"),
+            arrayOf(".cpp", "text/plain"),
+            arrayOf(".doc", "application/msword"),
+            arrayOf(".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+            arrayOf(".xls", "application/vnd.ms-excel"),
+            arrayOf(".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+            arrayOf(".exe", "application/octet-stream"),
+            arrayOf(".gif", "image/gif"),
+            arrayOf(".h", "text/plain"),
+            arrayOf(".htm", "text/html"),
+            arrayOf(".html", "text/html"),
+            arrayOf(".jar", "application/java-archive"),
+            arrayOf(".java", "text/plain"),
+            arrayOf(".jpeg", "image/jpeg"),
+            arrayOf(".jpg", "image/jpeg"),
+            arrayOf(".js", "application/x-javascript"),
+            arrayOf(".log", "text/plain"),
+            arrayOf(".m3u", "audio/x-mpegurl"),
+            arrayOf(".m4a", "audio/mp4a-latm"),
+            arrayOf(".m4b", "audio/mp4a-latm"),
+            arrayOf(".m4p", "audio/mp4a-latm"),
+            arrayOf(".m4u", "video/vnd.mpegurl"),
+            arrayOf(".m4v", "video/x-m4v"),
+            arrayOf(".mov", "video/quicktime"),
+            arrayOf(".mp2", "audio/x-mpeg"),
+            arrayOf(".mp3", "audio/x-mpeg"),
+            arrayOf(".mp4", "video/mp4"),
+            arrayOf(".mkv", "video/webm"),
+            arrayOf(".webm", "video/webm"),
+            arrayOf(".mpc", "application/vnd.mpohun.certificate"),
+            arrayOf(".mpe", "video/mpeg"),
+            arrayOf(".mpeg", "video/mpeg"),
+            arrayOf(".mpg", "video/mpeg"),
+            arrayOf(".mpg4", "video/mp4"),
+            arrayOf(".mpga", "audio/mpeg"),
+            arrayOf(".msg", "application/vnd.ms-outlook"),
+            arrayOf(".ogg", "audio/ogg"),
+            arrayOf(".pdf", "application/pdf"),
+            arrayOf(".png", "image/png"),
+            arrayOf(".pps", "application/vnd.ms-powerpoint"),
+            arrayOf(".ppt", "application/vnd.ms-powerpoint"),
+            arrayOf(
+                    ".pptx",
+                    "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            ),
+            arrayOf(".prop", "text/plain"),
+            arrayOf(".rc", "text/plain"),
+            arrayOf(".rmvb", "audio/x-pn-realaudio"),
+            arrayOf(".rtf", "application/rtf"),
+            arrayOf(".sh", "text/plain"),
+            arrayOf(".tar", "application/tar"),
+            arrayOf(".tgz", "application/tgz"),
+            arrayOf(".txt", "text/plain"),
+            arrayOf(".wav", "audio/x-wav"),
+            arrayOf(".wma", "audio/x-ms-wma"),
+            arrayOf(".wmv", "audio/x-ms-wmv"),
+            arrayOf(".wps", "application/vnd.ms-works"),
+            arrayOf(".xml", "text/plain"),
+            arrayOf(".zip", "application/zip"),
+            arrayOf("", "*/*")
     )
 
     /**
@@ -283,9 +285,9 @@ object FileExt {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             //7.0获取存储文件的uri
             return FileProvider.getUriForFile(
-                df.context,
-                df.appContext!!.packageName + fileProviderName,
-                file
+                    df.context,
+                    df.appContext!!.packageName + fileProviderName,
+                    file
             );
         } else {
             return Uri.fromFile(file)
@@ -406,7 +408,7 @@ object FileExt {
     @JvmStatic
     fun suffixIsPic(suff: String): Boolean {
         if (suff == "jpg" || suff == "jpeg" || suff == "png"
-            || suff == "bmp" || suff == "gif" || suff == "tif" || suff == "webp"
+                || suff == "bmp" || suff == "gif" || suff == "tif" || suff == "webp"
         )
             return true
 
@@ -416,12 +418,12 @@ object FileExt {
     @JvmStatic
     fun suffixIsSound(suff: String): Boolean {
         if (suff == "mp3" || suff == "mid" || suff == "wav" || suff == "wma"
-            || suff == "ape"
-            || suff == "flac"
-            || suff == "m4a"
-            || suff == "ogg"
-            || suff == "aac"
-            || suff == "mka"
+                || suff == "ape"
+                || suff == "flac"
+                || suff == "m4a"
+                || suff == "ogg"
+                || suff == "aac"
+                || suff == "mka"
         )
             return true
 
@@ -431,15 +433,15 @@ object FileExt {
     @JvmStatic
     fun suffixIsVideo(suff: String): Boolean {
         if (suff == "mp4" || suff == "mkv" || suff == "mov" || suff == "flv"
-            || suff == "webm"
-            || suff == "avi"
-            || suff == "3gp"
-            || suff == "mpeg"
-            || suff == "mts"
-            || suff == "ts"
-            || suff == "vob"
-            || suff == "mpg"
-            || suff == "wmv"
+                || suff == "webm"
+                || suff == "avi"
+                || suff == "3gp"
+                || suff == "mpeg"
+                || suff == "mts"
+                || suff == "ts"
+                || suff == "vob"
+                || suff == "mpg"
+                || suff == "wmv"
         )
             return true
 
@@ -577,10 +579,10 @@ fun File?.readAllText(charset: Charset = Charsets.UTF_8): String {
  * 循环读取内容至buffer
  */
 inline fun InputStream.readAll(
-    buffer: ByteArray,
-    byteOffset: Int = 0,
-    byteCount: Int = buffer.size,
-    func: (readByte: Int) -> Unit
+        buffer: ByteArray,
+        byteOffset: Int = 0,
+        byteCount: Int = buffer.size,
+        func: (readByte: Int) -> Unit
 ) {
     var bytesRead = 0
     while (true) {
