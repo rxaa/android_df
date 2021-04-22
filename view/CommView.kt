@@ -51,7 +51,7 @@ open class CommView : LinearLayout {
     }
 
     //该view所属的ListViewEx
-    var listEx: ListViewEx<*>? = null;
+    var listEx: ViewBuffer? = null;
 
     internal var _rootDialog: Dialog? = null;
 
@@ -68,6 +68,18 @@ open class CommView : LinearLayout {
      * 清除指定的viewGroup,并将其成员View加入缓存
      */
     open fun ViewGroup.clearView() {
+        listEx.notNull {
+            it.addViewBuffer(this);
+            this.removeAllViews()
+        }.nope {
+            this.removeAllViews()
+        }
+    }
+
+    /**
+     * 清除指定的viewGroup,并将其成员View加入缓存
+     */
+    open fun clearView() {
         listEx.notNull {
             it.addViewBuffer(this);
             this.removeAllViews()
@@ -118,11 +130,13 @@ open class CommView : LinearLayout {
             else
                 newViewFunc()
 
+            v.listEx = listEx;
             view.addView(v);
             return v;
         }
 
         val v = newViewFunc();
+        v.listEx = null
         view.addView(v);
         return v;
     }
@@ -155,7 +169,7 @@ open class CommView : LinearLayout {
         inflate(context, resId, this)
         getChildAt(childCount - 1).notNull {
             inflateView = it;
-            if(it is LinearLayout){
+            if (it is LinearLayout) {
                 layoutParams = it.layoutParams
             }
 

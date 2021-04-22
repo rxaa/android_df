@@ -58,25 +58,18 @@ fun Context.getStatusBarHeight(): Int {
     return result;
 }
 
-
-fun Activity.statusBarColor(color: Int) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        this.window.statusBarColor = color;
-        this.window.navigationBarColor = color;
-    }
-}
-
 /**
  * 亮色背景，黑色图标
  */
-fun Activity.statusBarLight() {
+fun Activity.statusBarLight(color: Int = Color.WHITE) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        window.decorView.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
     }
+    window.statusBarColor = color
+    window.navigationBarColor = color
 }
 
 /**
@@ -84,13 +77,7 @@ fun Activity.statusBarLight() {
  */
 fun Activity.statusNoBarLight(black: Boolean = true) {
     if (black) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.decorView.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.decorView.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        }
+        statusBarLight()
     }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         val decorView = window.decorView
@@ -105,7 +92,8 @@ fun Activity.statusNoBarLight(black: Boolean = true) {
         }
         ViewCompat.requestApplyInsets(decorView)
         //将状态栏设成透明，如不想透明可设置其他颜色
-        window.statusBarColor =ContextCompat.getColor(this, android.R.color.transparent)
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
     }
 }
 

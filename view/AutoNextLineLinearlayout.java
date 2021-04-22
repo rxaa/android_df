@@ -13,7 +13,7 @@ import java.util.Hashtable;
  * @author idengpan
  *
  */
-public class AutoNextLineLinearlayout extends LinearLayout {
+public class AutoNextLineLinearlayout extends CommView {
     int mLeft, mRight, mTop, mBottom;
     Hashtable map = new Hashtable();
 

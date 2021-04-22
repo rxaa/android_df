@@ -12,6 +12,7 @@ import android.widget.CompoundButton
 import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 import net.rxaa.util.df
+import net.rxaa.view.CommView
 
 
 val Int.resource: String
@@ -26,6 +27,16 @@ fun RecyclerView.isScrollBottom(): Boolean {
             this.computeVerticalScrollOffset() >= this.computeVerticalScrollRange()
 }
 
+fun View.findParentCommView(): CommView? {
+    var p: ViewParent? = this.parent;
+    while (p != null) {
+        if (p is CommView) {
+            return p
+        }
+        p = p.parent
+    }
+    return null;
+}
 
 fun View.setPaddingTop(v: Int) {
     this.setPadding(this.paddingLeft, v, this.paddingRight, this.paddingBottom);
@@ -90,7 +101,7 @@ var lastClickTime = 0L
 
 fun <T : View> T.onClick(cb: suspend (v: T) -> Unit): T {
     this.setOnClickListener { _ ->
-        if (System.currentTimeMillis() - lastClickTime < 500) {
+        if (System.currentTimeMillis() - lastClickTime < 120) {
             return@setOnClickListener
         }
         lastClickTime = System.currentTimeMillis()
