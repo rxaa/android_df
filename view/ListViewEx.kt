@@ -5,13 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
 import android.widget.*
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import net.rxaa.ext.*
 import net.rxaa.util.df
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 
 /**
@@ -98,6 +97,13 @@ open class ListViewEx<ListT>(
         }
     }
 
+
+    fun toGrid(numberOfColumns: Int): ListViewEx<ListT> {
+        _recyclerView.notNull {
+            it.setLayoutManager(GridLayoutManager(mCont, numberOfColumns))
+        }
+        return this
+    }
 
     /**
      * 关联一个view,当list size为0时显示,否则隐藏

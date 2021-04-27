@@ -678,7 +678,7 @@ object df {
         val ext = name.lastIndexOf('.');
         if (ext < 0)
             return "";
-        val aLastName = name.substring(ext + 1, (name.length - ext - 1));
+        val aLastName = name.substring(ext + 1, (name.length));
         return aLastName.toLowerCase()
     }
 
