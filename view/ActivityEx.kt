@@ -139,9 +139,9 @@ open class ActivityEx : Activity() {
 
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<out String>,
+            grantResults: IntArray
     ) {
         onActivityRequestPermissionsResult(requestCode, permissions, grantResults)
     }
@@ -237,16 +237,13 @@ open class ActivityEx : Activity() {
         val intentRetStr = "ret_udu83276"
 
 
-
-
-
         /**
          * 新建Intent并传参,func回调函数在setContentView之前调用,不要在此访问界面View
          */
         @JvmStatic
         inline fun <reified T : Activity> newIntent(
-            cont: Context?,
-            crossinline func: (T) -> Unit
+                cont: Context?,
+                crossinline func: (T) -> Unit
         ): Intent {
             val inte = Intent(cont, T::class.java)
             addIntentPara(inte) { act ->
@@ -259,10 +256,10 @@ open class ActivityEx : Activity() {
          * Set the Activity's content view to the given layout and return the associated binding.
          */
         fun <T> binding(
-            resId: Int,
-            act: Activity,
-            func: (v: View) -> T,
-            createList: ArrayList<() -> Unit>
+                resId: Int,
+                act: Activity,
+                func: (v: View) -> T,
+                createList: ArrayList<() -> Unit>
         ): BindView<T> {
             return BindView({
                 val v = LayoutInflater.from(act).inflate(resId, null)
@@ -280,41 +277,26 @@ open class ActivityEx : Activity() {
         val allowKilledStr = "allow_killed_0ikj374h";
 
 
-        fun getPath(activity: Activity, uri: Uri?): String {
-            if (uri == null) {
-                return "";
-            }
-            if (uri.authority?.length == 0)
-                return uri.path ?: ""
-            val projection = arrayOf(MediaStore.Images.Media.DATA)
-            val cursor = activity.managedQuery(uri, projection, null, null, null)
-            val column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-            cursor.moveToFirst()
-            val path = cursor.getString(column_index)
-            return path
-        }
-
         fun onActivityRequestPermissionsResult(
-            requestCode: Int,
-            permissions: Array<out String>?,
-            grantResults: IntArray
+                requestCode: Int,
+                permissions: Array<out String>?,
+                grantResults: IntArray
         ) {
             FileExt.catchLog {
                 permissionCameraContinuation[requestCode].notNull {
                     permissionCameraContinuation.remove(requestCode)
                     it.resume(
-                        grantResults.size > 0
-                                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                            grantResults.size > 0
+                                    && grantResults[0] == PackageManager.PERMISSION_GRANTED
                     )
                 }
             }
         }
 
 
-
         fun onActivityResult(
-            act: Activity, requestCode: Int,
-            resultCode: Int, data: Intent?
+                act: Activity, requestCode: Int,
+                resultCode: Int, data: Intent?
         ) {
 
             if (requestCode == Pic.getFileTag) {
@@ -329,8 +311,8 @@ open class ActivityEx : Activity() {
                     return
 
                 val uri = data.data
-                val currentFilePath = getPath(act, uri)
 
+                val currentFilePath = RealPathUtil.getRealPathFromURI(act, uri)
                 if (currentFilePath == null || currentFilePath!!.length < 1)
                     return
 
