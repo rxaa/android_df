@@ -93,7 +93,7 @@ object Net {
     fun getInternetType(context: Context): Int {
         @SuppressLint("MissingPermission") val info = (context
             .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetworkInfo
-        return info.type
+        return info?.type ?:0
     }
 
     /**
