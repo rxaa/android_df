@@ -32,7 +32,7 @@ class RecyAdapter(val list: ListViewEx<*>) : RecyclerView.Adapter<RecyItemHolder
         
         setViewLayout(v)
 
-        v.listEx = list
+        v.listEx = list.buffer
         return RecyItemHolder(v)
     }
 

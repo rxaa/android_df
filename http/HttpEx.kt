@@ -302,7 +302,7 @@ class HttpEx(val url: String, timeOut: Int = 15 * 1000) {
             respContent { bytes, size ->
                 rand.write(bytes, 0, size)
                 transferLen += size
-                if (System.currentTimeMillis() - now > 100) {
+                if (System.currentTimeMillis() - now > 100 || transferLen == fileSize) {
                     prog(transferLen, fileSize)
                     now = System.currentTimeMillis();
                 }

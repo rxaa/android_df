@@ -13,6 +13,8 @@ import android.telephony.TelephonyManager
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 
 
 fun Context.getConnectivityManager(): ConnectivityManager {
@@ -56,24 +58,42 @@ fun Context.getStatusBarHeight(): Int {
     return result;
 }
 
-
-fun Activity.statusBarColor(color: Int) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        this.window.statusBarColor = color;
-        this.window.navigationBarColor = color;
-    }
-}
-
 /**
  * 亮色背景，黑色图标
  */
-fun Activity.statusBarLight() {
+fun Activity.statusBarLight(color: Int = Color.WHITE) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        window.decorView.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+    }
+    window.statusBarColor = color
+    window.navigationBarColor = color
+}
+
+/**
+ * 沉浸式状态栏
+ */
+fun Activity.statusNoBarLight(black: Boolean = true) {
+    if (black) {
+        statusBarLight()
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        val decorView = window.decorView
+        decorView.setOnApplyWindowInsetsListener { v, insets ->
+            val defaultInsets = v.onApplyWindowInsets(insets)
+            defaultInsets.replaceSystemWindowInsets(
+                defaultInsets.systemWindowInsetLeft,
+                0,
+                defaultInsets.systemWindowInsetRight,
+                defaultInsets.systemWindowInsetBottom
+            )
+        }
+        ViewCompat.requestApplyInsets(decorView)
+        //将状态栏设成透明，如不想透明可设置其他颜色
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
     }
 }
 
@@ -96,7 +116,7 @@ fun Window.statusBarTransparent() {
  */
 fun Window.statusBarTransparentHalf() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        //            window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        //window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         this.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
     }
 }

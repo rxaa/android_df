@@ -3,15 +3,12 @@ package net.rxaa.util
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.Application
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.res.Configuration
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -55,34 +52,34 @@ object df {
     var actStack = ArrayList<Activity>();
 
 
-    @JvmStatic
-    fun regApp(app: Application) {
-        app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
-
-            override fun onActivityStopped(activity: Activity) {}
-            override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {}
-
-            override fun onActivityStarted(activity: Activity) {}
-
-            override fun onActivityResumed(activity: Activity) {}
-
-            override fun onActivityPaused(activity: Activity) {}
-
-            override fun onActivityDestroyed(activity: Activity) {
-                for (i in df.actStack.size - 1 downTo 0) {
-                    if (df.actStack[i] === activity) {
-                        df.actStack.removeAt(i)
-                        break
-                    }
-
-                }
-            }
-
-            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-                df.actStack.add(activity)
-            }
-        })
-    }
+//    @JvmStatic
+//    fun regApp(app: Application) {
+//        app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
+//
+//            override fun onActivityStopped(activity: Activity) {}
+//            override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {}
+//
+//            override fun onActivityStarted(activity: Activity) {}
+//
+//            override fun onActivityResumed(activity: Activity) {}
+//
+//            override fun onActivityPaused(activity: Activity) {}
+//
+//            override fun onActivityDestroyed(activity: Activity) {
+//                for (i in df.actStack.size - 1 downTo 0) {
+//                    if (df.actStack[i] === activity) {
+//                        df.actStack.removeAt(i)
+//                        break
+//                    }
+//
+//                }
+//            }
+//
+//            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+//                df.actStack.add(activity)
+//            }
+//        })
+//    }
 
     /**
      * 初始化appContext，在Application onCreate 调用
@@ -681,7 +678,7 @@ object df {
         val ext = name.lastIndexOf('.');
         if (ext < 0)
             return "";
-        val aLastName = name.substring(ext + 1, (name.length - ext - 1));
+        val aLastName = name.substring(ext + 1, (name.length));
         return aLastName.toLowerCase()
     }
 

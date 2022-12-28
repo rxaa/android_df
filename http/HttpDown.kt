@@ -9,6 +9,9 @@ import net.rxaa.ext.FileExt
 import net.rxaa.ext.plus
 import java.io.File
 import java.util.concurrent.Executors
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 
 /**
@@ -85,8 +88,33 @@ open class HttpDown(private var url: String, private var fileUrl: File? = null) 
         isCancel = true
     }
 
+    //请求标识
+    var httpTag: String? = null
+
     open fun onHttp(ht: HttpEx) {
 
+    }
+
+
+    private var onStart_: (ht: HttpEx) -> Unit = {}
+
+    //http开始请求前回调，可在此修改http头信息
+    fun onStart(func: (ht: HttpEx) -> Unit): HttpDown {
+        onStart_ = func;
+        return this
+    }
+
+    /**
+     * 开始下载任务
+     */
+    suspend fun await() = suspendCoroutine<Unit> { cont ->
+        start { ex ->
+            if (ex != null)
+                cont.resumeWithException(ex)
+            else {
+                cont.resume(Unit)
+            }
+        }
     }
 
     /**
@@ -94,13 +122,13 @@ open class HttpDown(private var url: String, private var fileUrl: File? = null) 
      */
     open fun start(res: (e: Exception?) -> Unit): HttpDown {
 
-
         val http = try {
             HttpEx(url)
         } catch (e: Exception) {
             res(e)
             return this
         }
+        onStart_(http)
         onHttp(http)
         isCancel = false
         runPool {

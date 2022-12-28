@@ -2,12 +2,8 @@ package net.rxaa.view
 
 import android.R
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewTreeObserver
+import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import net.rxaa.util.*
 import net.rxaa.ext.FileExt
@@ -150,13 +146,15 @@ open class ActCompat<ParaT : Serializable, RetT : Serializable> : AppCompatActiv
     /**
      * 是否为onCreate第一次触发
      */
-    var isFirst = true;
+    var isFirst = true
 
     var bundleOnCreate: Bundle? = null
 
     final override fun onCreate(savedInstanceState: Bundle?) {
-        bundleOnCreate = savedInstanceState;
-        isFirst = true;
+        bundleOnCreate = savedInstanceState
+        isFirst = true
+        //启动转场动画
+        window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
         super.onCreate(savedInstanceState)
         ActivityEx.procAct(this)
         if (ActivityEx.isKilled(this))
@@ -221,7 +219,6 @@ open class ActCompat<ParaT : Serializable, RetT : Serializable> : AppCompatActiv
         super.onStop()
         FileExt.catchLog { onStopEx() }
     }
-
 
     internal var rootView: View? = null
 

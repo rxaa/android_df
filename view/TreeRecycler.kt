@@ -1,18 +1,14 @@
 package net.rxaa.view
 
 import android.content.Context
-import android.util.Log
 import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import net.rxaa.ext.*
 import net.rxaa.util.*
-import net.rxaa.ext.Animator
-import net.rxaa.ext.FileExt
-import net.rxaa.ext.nope
-import net.rxaa.ext.notNull
 
 
 /**
@@ -28,6 +24,9 @@ open class TreeRecycler(
         isFold = false
     }
 
+    val buffer: ViewBuffer by lazy {
+        ViewBuffer()
+    }
 
     /**
      * 是否开启动画
@@ -268,6 +267,33 @@ open class TreeListNode(
 
 
     /**
+     * 绑定横向节点数据（可以通过判断isLoad来避免重复绑定）
+     * @param list:  绑定数据
+     * @param onCreate 同RecyclerView, 创建View回调
+     * @param onBindView   同RecyclerView, 显示View item回调
+     */
+    inline fun <ListT, reified ViewT : CommView> bindHorizonList(
+        list: List<ListT>,
+        noinline onCreate: () -> ViewT,
+        noinline onBindView: (view: ViewT, dat: ListT, index: Int) -> Unit
+    ) {
+        val arr = arrayListOf("")
+
+        bindSubList(arr, {
+            RowView(listTree.cont, listTree)
+        }) { vi, d, i, n ->
+            vi.clearView()
+            list.forEachIndexed { index, dat ->
+                val v = listTree.buffer.getViewBuffer(ViewT::class.java) as? ViewT ?: onCreate()
+                v.listEx = listTree.buffer;
+                onBindView(v, dat, index)
+                vi.addView(v)
+            }
+
+        }
+    }
+
+    /**
      * 绑定节点数据（可以通过判断isLoad来避免重复绑定）
      * @param list:  绑定数据
      * @param onCreate 同RecyclerView, 创建View回调
@@ -400,6 +426,18 @@ class TreeRecyvlerData(
 
 }
 
+class RowView(context: Context, val listTree: TreeRecycler) :
+    AutoNextLineLinearlayout(context) {
+    init {
+        listEx = listTree.buffer
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        clearView()
+    }
+}
+
 
 class TreeAdapter(val list: TreeRecycler) : RecyclerView.Adapter<RecyItemHolder>() {
 
@@ -440,7 +478,7 @@ class TreeAdapter(val list: TreeRecycler) : RecyclerView.Adapter<RecyItemHolder>
             val node = list.displayList.get(position);
             val parent = node.parent ?: return;
             val dat = parent.datas.get(node.parentI) ?: return;
-
+            holder.view.listEx = list.buffer
             parent.onBindView(holder.view, dat, position, node);
         }
 

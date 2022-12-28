@@ -17,11 +17,11 @@ import android.os.Build
 import android.provider.MediaStore
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
+import net.rxaa.ext.FileExt
+import net.rxaa.ext.plus
 import net.rxaa.util.Func1
 import net.rxaa.util.MsgException
 import net.rxaa.util.df
-import net.rxaa.ext.FileExt
-import net.rxaa.ext.plus
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -44,8 +44,8 @@ object Pic {
 
         if (arr.size < count) {
             val loadPic = (ContextCompat.getDrawable(
-                df.appContext!!,
-                id
+                    df.appContext!!,
+                    id
             ) as BitmapDrawable).bitmap
 
             for (i in 0..count) {
@@ -73,10 +73,10 @@ object Pic {
         matrix.setRotate(angle, (bitmap.width / 2).toFloat(), (bitmap.height / 2).toFloat())
         //以bitmap跟matrix一起创建一个新的旋转以后的bitmap
         bitmap = Bitmap.createBitmap(
-            bitmap, 0, 0,
-            bitmap.width,
-            bitmap.height,
-            matrix, true
+                bitmap, 0, 0,
+                bitmap.width,
+                bitmap.height,
+                matrix, true
         )
         //bitmap转化为drawable对象
         return BitmapDrawable(df.appContext!!.resources, bitmap)
@@ -89,9 +89,9 @@ object Pic {
                 val w = canvas.clipBounds.right - canvas.clipBounds.left
                 val h = canvas.clipBounds.bottom - canvas.clipBounds.top
                 canvas.rotate(
-                    angle,
-                    w.toFloat() / 2,
-                    (h.toFloat() / 2)
+                        angle,
+                        w.toFloat() / 2,
+                        (h.toFloat() / 2)
                 )
                 super.draw(canvas)
                 canvas.restore()
@@ -117,8 +117,8 @@ object Pic {
         matrix.postRotate(angle.toFloat())
         // 创建新的图片
         val resizedBitmap = Bitmap.createBitmap(
-            bitmap, 0, 0,
-            bitmap.width, bitmap.height, matrix, true
+                bitmap, 0, 0,
+                bitmap.width, bitmap.height, matrix, true
         )
         return resizedBitmap
     }
@@ -135,10 +135,10 @@ object Pic {
         try {
             val exifInterface = ExifInterface(path)
             val orientation =
-                exifInterface.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_NORMAL
-                )
+                    exifInterface.getAttributeInt(
+                            ExifInterface.TAG_ORIENTATION,
+                            ExifInterface.ORIENTATION_NORMAL
+                    )
             return orientation
         } catch (e: Exception) {
             e.printStackTrace()
@@ -160,10 +160,10 @@ object Pic {
         try {
             val exifInterface = ExifInterface(path)
             val orientation =
-                exifInterface.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_NORMAL
-                )
+                    exifInterface.getAttributeInt(
+                            ExifInterface.TAG_ORIENTATION,
+                            ExifInterface.ORIENTATION_NORMAL
+                    )
             when (orientation) {
                 ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
                 ExifInterface.ORIENTATION_ROTATE_180 -> degree = 180
@@ -204,7 +204,7 @@ object Pic {
     @JvmStatic
     fun scanPhoto(ctx: Context, imgFileName: String) {
         val mediaScanIntent = Intent(
-            Intent.ACTION_MEDIA_SCANNER_SCAN_FILE
+                Intent.ACTION_MEDIA_SCANNER_SCAN_FILE
         )
         val file = File(imgFileName)
         val contentUri = Uri.fromFile(file)
@@ -275,7 +275,7 @@ object Pic {
             opt.inPreferredConfig = cfg
             // 获取资源图片
             val `is` = df.appContext!!.resources.openRawResource(
-                resId
+                    resId
             )
             return BitmapFactory.decodeStream(`is`, null, opt)
         } catch (e: Throwable) {
@@ -409,7 +409,7 @@ object Pic {
                     else
                         options.inPreferredConfig = Bitmap.Config.ARGB_8888
                     val bmp =
-                        BitmapFactory.decodeResource(df.appContext!!.resources, resId, options)
+                            BitmapFactory.decodeResource(df.appContext!!.resources, resId, options)
                     return bmp
                 } catch (e: OutOfMemoryError) {
                     i *= 2
@@ -512,8 +512,8 @@ object Pic {
      */
     @JvmStatic
     fun compressAndSaveBitmapToSDCard(
-        rawBitmap: Bitmap?,
-        fileName: String, quality: Int
+            rawBitmap: Bitmap?,
+            fileName: String, quality: Int
     ) {
         if (rawBitmap == null)
             return;
@@ -536,8 +536,8 @@ object Pic {
                 // 第二个参数quality为图像压缩比的值,0-100.0 意味着小尺寸压缩,100意味着高质量压缩
                 // 第三个参数stream为输出流
                 rawBitmap.compress(
-                    Bitmap.CompressFormat.JPEG, quality,
-                    fileOutputStream
+                        Bitmap.CompressFormat.JPEG, quality,
+                        fileOutputStream
                 )
             }
             fileOutputStream.flush()
@@ -557,8 +557,8 @@ object Pic {
      */
     @JvmStatic
     fun compressAndSaveBitmapToSDCard(
-        rawBitmap: Bitmap,
-        fileName: String
+            rawBitmap: Bitmap,
+            fileName: String
     ) {
         val saveFilePaht = fileName
 
@@ -578,8 +578,8 @@ object Pic {
                 // 第二个参数quality为图像压缩比的值,0-100.0 意味着小尺寸压缩,100意味着高质量压缩
                 // 第三个参数stream为输出流
                 rawBitmap.compress(
-                    Bitmap.CompressFormat.PNG, 100,
-                    fileOutputStream
+                        Bitmap.CompressFormat.PNG, 100,
+                        fileOutputStream
                 )
             }
             fileOutputStream.flush()
@@ -617,8 +617,8 @@ object Pic {
             // mCurrentPhotoFile = new File(PHOTO_DIR, mFileName);
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE, null)
             intent.putExtra(
-                MediaStore.EXTRA_OUTPUT,
-                FileExt.getFileUri(cameraFile)
+                    MediaStore.EXTRA_OUTPUT,
+                    FileExt.getFileUri(cameraFile)
             )
             takePhotoFunc = res
             act.startActivityForResult(intent, takePhotoTag)
@@ -648,7 +648,7 @@ object Pic {
      */
     @JvmStatic
     fun getImageFile(act: Activity, res: Func1<String>) {
-        getFile(act, "image/*", res)
+        getFile(act, "image/*", null, res)
     }
 
     suspend fun awaitGetImageFile(act: Activity): String {
@@ -735,21 +735,24 @@ object Pic {
 
     }
 
-    suspend fun awaitGetFile(act: Activity, filter: String) = suspendCoroutine<String> { conti ->
-        getFile(act, filter, Func1 { res ->
+    suspend fun awaitGetFile(act: Activity, filter: String = "*/*", mediaType: Array<String>? = null) = suspendCoroutine<String> { conti ->
+        getFile(act, filter, mediaType) { res ->
             conti.resume(res)
-        })
+        }
     }
 
     @JvmStatic
-    fun getFile(act: Activity, filter: String, res: Func1<String>) {
+    fun getFile(act: Activity, filter: String = "*/*", mediaType: Array<String>? = null, res: Func1<String>) {
         try {
-            val intent = Intent(Intent.ACTION_PICK)
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = filter
             if (filter == "*/*")
                 intent.addCategory(Intent.CATEGORY_OPENABLE)
             // 新参数
             getFileTable = res
+            if (mediaType != null && mediaType.isNotEmpty()) {
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, mediaType)
+            }
             act.startActivityForResult(intent, getFileTag)
         } catch (e: Throwable) {
             FileExt.logException(e)
